@@ -6,12 +6,12 @@ const userSchema = new mongoose.Schema(
             type: String,
             trim: true,
             min: [2, 'at least 3 character of admin name'],
-            required: [true, 'user name is required '],
-            unique: true
+            required: [true, 'user name is required ']
         },
         email: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         password: {
             type: String,
@@ -21,7 +21,20 @@ const userSchema = new mongoose.Schema(
 
         role: {
             type: String,
-            default: 'user'
+            default: 'user',
+            required: true
+        },
+        gender: {
+            type: String,
+            required: true
+        },
+        isVerified: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        profilePicture: {
+            type: String
         }
     },
     { timestamps: true }

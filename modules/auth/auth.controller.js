@@ -1,23 +1,26 @@
 const bcrypt = require('bcrypt');
 const JWT = require('jsonwebtoken');
+const User = require('../user/user.model');
 
 require('dotenv').config();
 
+const JWT_EXPIRY_TIME = '10d';
+
 const signIn = async (req, res, next) => {
     try {
-        const { admin, password } = req.body;
-        const dbAdmin = await Admin.findOne({ admin });
-        console.log(dbAdmin);
+        const { email, password } = req.body;
+        const dbUser = await User.findOne({ email });
+        console.log(dbUser);
 
-        if (dbAdmin) {
-            const isValidPassword = await bcrypt.compare(password, dbAdmin.password);
+        if (dbUser) {
+            const isValidPassword = await bcrypt.compare(password, dbUser.password);
             if (isValidPassword) {
                 // all is ok
                 // token generation
                 const token = JWT.sign(
-                    { admin, role: dbAdmin.role, id: dbAdmin._id },
+                    { email, role: dbUser.role, id: dbUser._id },
                     process.env.JWT_SECRET,
-                    { expiresIn: '10d' }
+                    { expiresIn: JWT_EXPIRY_TIME }
                 );
 
                 console.log(token);
@@ -27,37 +30,49 @@ const signIn = async (req, res, next) => {
                 res.set('Authorization', token);
                 //res.set('authToken', token);
                 res.json({
-                    admin: dbAdmin,
-                    status: 'Log in success'
+                    status: true,
+                    user: dbUser,
+                    message: 'User Log in success'
                 });
             } else {
-                res.send({ status: 'password error' }).status(401);
+                res.send({ status: false, message: 'Password Invalid !' }).status(401);
             }
         } else {
-            res.send('Auth error2').status(401);
+            res.send({
+                status: false,
+                message: 'user not found ! '
+            }).status(401);
         }
     } catch (err) {
-        console.log(err.message);
+        // console.log(err.message);
         next(err.message);
     }
 };
 
 const changePassword = async (req, res, next) => {
     try {
-        const { id, password } = req.body;
-        const newPassword = await bcrypt.hash(password, 10);
-
-        const updatedAdmin = await Admin.findByIdAndUpdate(
-            { _id: id },
-            { password: newPassword },
-            { new: true } // Options: return the updated document and run validation
-        );
-
-        if (!updatedAdmin) {
-            throw new Error('Admin not found');
+        const { id, email, oldPassword, newPassword } = req.body;
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        const userDb = await User.findOne({ _id: id, email, password: oldPassword });
+        if (!userDb) {
+            res.send({
+                status: false,
+                message: 'user not fund !'
+            });
         }
 
-        res.send({ status: 'updated successfully password' });
+        if (userDb) {
+            const updatedPasswordUser = await User.updateOne(
+                { _id: id, email },
+                { password: newPasswordHash },
+                { new: true }
+            );
+            res.send({
+                message: 'updated successfully password',
+                status: true,
+                user: updatedPasswordUser
+            });
+        }
     } catch (err) {
         next(err.message);
     }
@@ -65,24 +80,31 @@ const changePassword = async (req, res, next) => {
 
 const signUp = async (req, res, next) => {
     try {
-        const { email, password, role } = req.body;
+        const { email, password, role, userName, gender, profilePicture } = req.body;
 
         const hashPassword = await bcrypt.hash(password, 10);
-        console.log(hashPassword);
+        // console.log(hashPassword);
 
-        const user = new User({ ...req.body, email, password: hashPassword, role });
-        console.log(user);
-        await user.save();
-        // token make start by email and mongo table id
-        const tokenPayload = { email, role: user.role, id: user._id };
-        const token = JWT.sign(tokenPayload, process.env.JWT_SECRET, {
-            expiresIn: '10d'
+        const user = await User.create({
+            email,
+            password: hashPassword,
+            role,
+            userName,
+            gender,
+            profilePicture
         });
+        console.log(user);
+
+        const token = JWT.sign({ email, role: user.role, id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: JWT_EXPIRY_TIME
+        });
+
         res.set('Access-Control-Expose-Headers', 'Authorization');
         // authorization  headers  client response  has token
         res.set('Authorization', token);
 
         res.json({
+            status: true,
             message: 'user created success',
             user
         }).status(200);
@@ -91,12 +113,24 @@ const signUp = async (req, res, next) => {
     }
 };
 
-const getUserByToken = (req, res, next) => {
+const getUserByToken = async (req, res, next) => {
     try {
-        console.log(1, 'getAdminByToken');
         res.send({
-            status: 'OK',
-            admin: req.tokenPayLoad
+            status: true,
+            user: req.tokenPayLoad,
+            message: 'user form token'
+        });
+    } catch ({ message }) {
+        next(message);
+    }
+};
+
+const forgetPassword = async (req, res, next) => {
+    try {
+        res.send({
+            status: true,
+            user: req.tokenPayLoad,
+            message: 'user form token'
         });
     } catch ({ message }) {
         next(message);
@@ -106,6 +140,7 @@ const getUserByToken = (req, res, next) => {
 module.exports = {
     signIn,
     changePassword,
+
     getUserByToken,
     signUp
 };

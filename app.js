@@ -2,6 +2,8 @@
 const express = require('express');
 const app = express();
 const cors = require('cors'); // cors
+const { authRouter } = require('./modules/auth/auth.router');
+const { userRouter } = require('./modules/user/user.router');
 require('dotenv').config(); // req for access dot env file
 
 // application level middleware
@@ -12,11 +14,17 @@ app.use(express.urlencoded({ extended: true }));
 // case sensitive routing
 app.enable('case sensitive routing');
 
-// public routes
 // home route
 app.get('/', (req, res) => {
     res.send('home route');
 });
+
+// public routes
+
+// auth router
+app.use('/auth', authRouter);
+// user router
+app.use('/user', userRouter);
 
 // not found any route error : 404
 app.use((req, res, next) => {

@@ -7,7 +7,7 @@ const authRouter = express.Router();
 
 authRouter.post('/signIn', signIn);
 authRouter.post('/signUp', signUp);
-authRouter.get('/getUserByToken', getUserByToken);
+authRouter.get('/getUserByToken', checkToken, getUserByToken);
 authRouter.put('/changePassword', checkToken, changePassword);
 
 module.exports = {

@@ -4,13 +4,14 @@ const User = require('../modules/user/user.model');
 require('dotenv').config();
 
 const checkToken = async (req, res, next) => {
+    console.log(1);
     const { authorization } = req.headers;
     console.log(authorization, 101);
 
     if (!authorization) {
         res.status(401).send({
             status: false,
-            message: 'Unauthorized 1 ! header authentication failed'
+            message: 'Unauthorized 1 ! header authentication not found !'
         });
     } else {
         try {
@@ -37,7 +38,7 @@ const checkToken = async (req, res, next) => {
                 // all ok !
                 req.tokenPayLoad = userDb;
 
-                console.log(userDb, 'userDB');
+                console.log(userDb, 'userDB form checkToken');
             }
 
             next();
