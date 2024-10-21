@@ -4,6 +4,9 @@ const app = express();
 const cors = require('cors'); // cors
 const { authRouter } = require('./modules/auth/auth.router');
 const { userRouter } = require('./modules/user/user.router');
+const { postRouter } = require('./modules/post/post.router');
+const { commentRouter } = require('./modules/comment/comment.router');
+const { likeRouter } = require('./modules/like/like.router');
 require('dotenv').config(); // req for access dot env file
 
 // application level middleware
@@ -25,6 +28,12 @@ app.get('/', (req, res) => {
 app.use('/auth', authRouter);
 // user router
 app.use('/user', userRouter);
+// post route
+app.use('/post', postRouter);
+// comment route
+app.use('/comment', commentRouter);
+// like router
+app.use('/like', likeRouter);
 
 // not found any route error : 404
 app.use((req, res, next) => {
@@ -38,7 +47,7 @@ app.use((req, res, next) => {
 // final error handling  middleware error : 500
 
 app.use((error, req, res, next) => {
-    console.log('last middleware ');
+    console.log('last middleware ', error.message);
     res.status(error.status || 500).json({
         status: false,
         message: error.message

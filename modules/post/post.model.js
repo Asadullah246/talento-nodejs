@@ -1,0 +1,39 @@
+const mongoose = require('mongoose');
+
+const postSchema = new mongoose.Schema(
+    {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        description: {
+            type: String,
+            required: true,
+            maxLength: 500
+        },
+        imageUrl: {
+            type: String
+        },
+        videoUrl: {
+            type: String
+        },
+        comments: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Comment' // Reference to Comment model for nested replies
+            }
+        ],
+        likes: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User' // Reference to Comment model for nested replies
+            }
+        ]
+    },
+    { timestamps: true }
+);
+
+const Post = mongoose.model('Post', postSchema);
+
+module.exports = Post;
