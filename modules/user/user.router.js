@@ -5,7 +5,9 @@ const {
     userOtpVerify,
     followUser,
     unFollowUser,
-    updateUser
+    updateUser,
+    getAllUsers,
+    suggestUsers
 } = require('./user.controller');
 const userRouter = express.Router();
 
@@ -16,6 +18,8 @@ userRouter.post('/userOtpVerify', userOtpVerify);
 userRouter.post('/followUser', checkToken, followUser);
 userRouter.post('/unFollowUser', checkToken, unFollowUser);
 userRouter.post('/updateUser', checkToken, updateUser);
+userRouter.get('/getAllUsers', checkToken, getAllUsers);
+userRouter.get('/suggestUsers', checkToken, suggestUsers);
 
 module.exports = {
     userRouter

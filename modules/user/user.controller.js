@@ -190,10 +190,58 @@ const updateUser = async (req, res, next) => {
     }
 };
 
+const getAllUsers = async (req, res, next) => {
+    try {
+        const userId = req.tokenPayLoad._id; // Get the logged-in user's ID
+
+        // Retrieve all users excluding the current user
+        const users = await User.find({
+            _id: { $ne: userId } // Exclude the current user by using $ne (not equal)
+        });
+
+        // Return the users in the response
+        res.status(200).send({
+            status: true,
+            users
+        });
+    } catch (error) {
+        console.error('Error retrieving users:', error);
+        next(error); // Pass error to the error handler middleware
+    }
+};
+
+const suggestUsers = async (req, res, next) => {
+    try {
+        const userId = req.tokenPayLoad._id; // Get the current logged-in user ID
+
+        // Find the current user to get their following array
+        const currentUser = await User.findById(userId).select('following');
+
+        if (!currentUser) {
+            return res.status(404).send({ status: false, message: 'User not found' });
+        }
+
+        // Fetch users who are not followed by the current user and not the current user themselves
+        const suggestedUsers = await User.find({
+            _id: { $nin: [...currentUser.following, userId] } // Exclude the current user and following users
+        }).select('userName email profilePicture'); // Select fields you want to return
+
+        res.status(200).send({
+            status: true,
+            users: suggestedUsers
+        });
+    } catch (error) {
+        console.error('Error suggesting users:', error);
+        next(error);
+    }
+};
+
 module.exports = {
     userOtpSend,
     userOtpVerify,
     followUser,
     unFollowUser,
-    updateUser
+    updateUser,
+    getAllUsers,
+    suggestUsers
 };

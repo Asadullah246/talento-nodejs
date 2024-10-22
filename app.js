@@ -7,6 +7,7 @@ const { userRouter } = require('./modules/user/user.router');
 const { postRouter } = require('./modules/post/post.router');
 const { commentRouter } = require('./modules/comment/comment.router');
 const { likeRouter } = require('./modules/like/like.router');
+const { communityRouter } = require('./modules/community/community.router');
 require('dotenv').config(); // req for access dot env file
 
 // application level middleware
@@ -34,6 +35,8 @@ app.use('/post', postRouter);
 app.use('/comment', commentRouter);
 // like router
 app.use('/like', likeRouter);
+// community router
+app.use('/community', communityRouter);
 
 // not found any route error : 404
 app.use((req, res, next) => {
