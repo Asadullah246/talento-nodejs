@@ -1,3 +1,4 @@
+const Notification = require('../notification/notification.model');
 const Post = require('../post/post.model');
 const Comment = require('./comment.model');
 
@@ -23,6 +24,18 @@ const createComment = async (req, res, next) => {
         // Push the comment ID to the post's comments array
         post.comments.push(comment._id);
         await post.save(); // Save the post to reflect changes
+
+        // notification create
+
+        const notification = await Notification.create({
+            recipient: post.user, // Post owner receives the notification
+            sender: userId, // The user who comment the post
+            notificationType: 'comment',
+            post: postId,
+            message: `reacted to your post: "${post.description.substring(0, 20)}..." ` // A preview of the post description
+        });
+
+        console.log('comment notification created', notification);
 
         res.status(201).send({ status: true, comment });
     } catch (error) {

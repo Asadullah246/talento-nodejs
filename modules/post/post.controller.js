@@ -1,5 +1,47 @@
 const Post = require('./post.model');
 
+// pagenation based post retrieved home page
+
+const getPaginatedPosts = async (req, res, next) => {
+    try {
+        // *** Get the page number from query params, default to 1 if not provided ****
+
+        let { page, limit } = req.body;
+        // do it to int
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        // Calculate how many posts to skip for pagination
+        const skip = (page - 1) * limit;
+
+        // Fetch the posts with pagination
+        const posts = await Post.find({})
+            .sort({ createdAt: -1 }) // Sort by most recent
+            .skip(skip) // Skip the appropriate number of posts for pagination
+            .limit(limit) // Limit the number of posts to 20
+            .populate({
+                path: 'comments',
+                populate: {
+                    path: 'replies', // Populate replies within comments
+                    model: 'Comment' // Assuming the replies are also stored in the Comment model
+                }
+            })
+            .populate('user', 'userName profilePicture') // Populate user details
+            .exec();
+
+        // Send the paginated posts as response
+        res.status(200).send({
+            status: true,
+            message: 'Posts retrieved successfully',
+            posts,
+            currentPage: page
+        });
+    } catch (error) {
+        console.error('Error retrieving paginated posts:', error);
+        next(error); // Pass the error to the error handling middleware
+    }
+};
+
 const getPostByUserId = async (req, res, next) => {
     try {
         const { userId } = req.body;
@@ -92,5 +134,6 @@ const deletePostByUserIdPostId = async (req, res, next) => {
 module.exports = {
     deletePostByUserIdPostId,
     createPost,
-    getPostByUserId
+    getPostByUserId,
+    getPaginatedPosts
 };

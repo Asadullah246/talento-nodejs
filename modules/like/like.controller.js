@@ -1,4 +1,5 @@
 const Comment = require('../comment/comment.model');
+const Notification = require('../notification/notification.model');
 const Post = require('../post/post.model');
 
 const likePost = async (req, res, next) => {
@@ -23,6 +24,18 @@ const likePost = async (req, res, next) => {
             // User has not liked the post, add the like
             post.likes.push(userId);
             await post.save();
+            // notification only for like part of post
+            // Create the notification
+            const notification = await Notification.create({
+                recipient: post.user, // Post owner receives the notification
+                sender: userId, // The user who liked the post
+                notificationType: 'like',
+                post: postId,
+                message: `reacted to your post:"${post.description.substring(0, 20)}..." ` // A preview of the post description
+            });
+
+            console.log('create Notification ', notification);
+
             return res.status(200).send({ status: true, message: 'Post liked successfully' });
         }
     } catch (error) {
@@ -53,6 +66,16 @@ const likeComment = async (req, res, next) => {
             // User has not liked the comment, add the like
             comment.likes.push(userId);
             await comment.save();
+
+            // notification create for the like comment
+            const notification = await Notification.create({
+                recipient: comment.user, // Comment owner receives the notification
+                sender: userId, // The user who liked the Comment
+                notificationType: 'like',
+                comment: commentId,
+                message: `reacted to your Comment: "${comment.commentContent.substring(0, 10)}..."` // A preview of the post description
+            });
+            console.log('create Notification ', notification);
             return res.status(200).send({ status: true, message: 'Comment liked successfully' });
         }
     } catch (error) {
