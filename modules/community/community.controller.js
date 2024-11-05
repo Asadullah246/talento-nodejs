@@ -1,31 +1,71 @@
 const Community = require('./community.model');
 
-const createCommunity = async (req, res, next) => {
+// const createCommunity = async (req, res, next) => {
+//     try {
+//         const { communityName, description, communityPicture } = req.body;
+//         const userId = req.tokenPayLoad._id; // User ID of the person creating the community
+
+//         // Create a new community with the user as the communityAdmin
+//         const community = await Community.create({
+//             communityName,
+//             description,
+//             communityPicture,
+//             communityAdmin: [userId], // The user who creates the community becomes the admin
+//             communityModerator: [],
+//             communityPeople: [userId], // The user is also part of the community
+//             invitedPeople: []
+//         });
+
+//         res.status(201).send({
+//             status: true,
+//             message: 'Community created successfully',
+//             community
+//         });
+//     } catch (error) {
+//         console.error('Error creating community:', error);
+//         next(error);
+//     }
+// };
+
+ const createCommunity = async (req, res, next) => {
+
+    console.log("calling this ");
     try {
-        const { communityName, description, communityPicture } = req.body;
-        const userId = req.tokenPayLoad._id; // User ID of the person creating the community
+      const { communityName, description } = req.body;
+      const userId = req?.tokenPayLoad?._id; // User ID of the person creating the community
 
-        // Create a new community with the user as the communityAdmin
-        const community = await Community.create({
-            communityName,
-            description,
-            communityPicture,
-            communityAdmin: [userId], // The user who creates the community becomes the admin
-            communityModerator: [],
-            communityPeople: [userId], // The user is also part of the community
-            invitedPeople: []
+      if (!req.file) {
+        return res.status(400).send({
+          status: false,
+          message: 'Image upload failed. Please upload an image.',
         });
+      }
 
-        res.status(201).send({
-            status: true,
-            message: 'Community created successfully',
-            community
-        });
+      const communityPictureUrl = req?.file?.location; // URL of the uploaded image
+
+      // Create a new community with the user as the communityAdmin
+      const community = await Community.create({
+        communityName,
+        description,
+        communityPicture: communityPictureUrl,
+        communityAdmin: [userId], // The user who creates the community becomes the admin
+        communityModerator: [],
+        communityPeople: [userId], // The user is also part of the community
+        invitedPeople: [],
+      });
+
+      res.status(201).send({
+        status: true,
+        message: 'Community created successfully',
+        community,
+      });
     } catch (error) {
-        console.error('Error creating community:', error);
-        next(error);
+      console.error('Error creating community:', error);
+      next(error);
     }
-};
+  }
+
+
 
 const addModerator = async (req, res, next) => {
     try {

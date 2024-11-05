@@ -4,9 +4,9 @@ const User = require('../modules/user/user.model');
 require('dotenv').config();
 
 const checkToken = async (req, res, next) => {
-    console.log(1);
+    // console.log(1);
     const { authorization } = req.headers;
-    console.log(authorization, 101);
+    // console.log(authorization, 101);
 
     if (!authorization) {
         res.status(401).send({
@@ -38,7 +38,7 @@ const checkToken = async (req, res, next) => {
                 // all ok !
                 req.tokenPayLoad = userDb;
 
-                console.log(userDb, 'userDB form checkToken');
+                // console.log(userDb, 'userDB form checkToken');
             }
 
             next();

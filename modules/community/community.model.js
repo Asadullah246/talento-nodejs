@@ -12,7 +12,7 @@ const communitySchema = new mongoose.Schema(
         },
         communityPicture: {
             type: String,
-            required: true
+            required: false
         },
         communityAdmin: [
             {

@@ -72,10 +72,14 @@ const getPostByUserId = async (req, res, next) => {
 };
 
 const createPost = async (req, res, next) => {
+
+    console.log("calling post ");
     try {
-        const { userId, description } = req.body;
-        // console.log(req.tokenPayLoad._id.toString() === userId);
+        const { userId, description,fileType } = req.body;
+        console.log("body", req.body) ;
+        console.log(req.tokenPayLoad._id.toString() === userId);
         // console.log(0);
+        console.log("user ", req?.tokenPayLoad._id?.toString(), userId);
 
         if (userId !== req.tokenPayLoad._id.toString()) {
             res.send({
@@ -84,10 +88,32 @@ const createPost = async (req, res, next) => {
                 message: 'Invalid User !'
             });
         }
-        // more validation for storage here
-        // console.log(1);
 
-        const createPostNew = await Post.create({ user: userId, description: description });
+
+         // Check if a file was uploaded and set the URL accordingly
+    let imageUrl = '';
+    let videoUrl = '';
+
+    console.log("red fiels", req?.files);
+    console.log("red fiel", req?.file); 
+    if (req.file) {
+      const fileUrl = req.file.location;
+      if (fileType === 'image') {
+        imageUrl = fileUrl;
+      } else if (fileType === 'video') {
+        videoUrl = fileUrl;
+      }
+    }
+
+
+    const createPostNew = await Post.create({
+        user: userId,
+        description,
+        imageUrl,
+        videoUrl,
+      });
+
+
 
         res.send({
             status: true,

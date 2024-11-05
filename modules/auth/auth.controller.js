@@ -23,7 +23,7 @@ const signIn = async (req, res, next) => {
                     { expiresIn: JWT_EXPIRY_TIME }
                 );
 
-                console.log(token);
+                // console.log(token);
                 res.set('Access-Control-Expose-Headers', 'Authorization');
 
                 // token add to res header
@@ -79,8 +79,10 @@ const changePassword = async (req, res, next) => {
 };
 
 const signUp = async (req, res, next) => {
+
     try {
-        const { email, password, role, userName, gender, profilePicture } = req.body;
+        const { email, password, role, userName, gender, profilePicture,uid, isVerified } = req.body;
+
 
         const hashPassword = await bcrypt.hash(password, 10);
         // console.log(hashPassword);
@@ -91,7 +93,7 @@ const signUp = async (req, res, next) => {
             role,
             userName,
             gender,
-            profilePicture
+            profilePicture,uid, isVerified
         });
         console.log(user);
 

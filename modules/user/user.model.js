@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
         userName: {
             type: String,
             trim: true,
-            min: [2, 'at least 3 character of admin name'],
+            min: [2, 'at least 3 character of name'],
             required: [true, 'user name is required ']
         },
         email: {
@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema(
         gender: {
             type: String,
             required: true
+        },
+        uid: {
+            type: String,
+            required: false
         },
         isVerified: {
             type: Boolean,
