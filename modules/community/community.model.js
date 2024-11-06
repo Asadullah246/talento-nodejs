@@ -4,7 +4,8 @@ const communitySchema = new mongoose.Schema(
     {
         communityName: {
             type: String,
-            required: true
+            required: true,
+            unique: true 
         },
         description: {
             type: String,

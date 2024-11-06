@@ -30,10 +30,10 @@ const upload = multer({
   storage: hasCredentials ? multerS3({
     s3: s3,
     bucket: process.env.DO_SPACES_BUCKET || 'demo-bucket',
-    acl: 'public-read', 
+    acl: 'public-read',
     key: function (req, file, cb) {
     //   cb(null, `community-images/${uuidv4()}-${file.originalname}`);
-      cb(null, `post-images/${uuidv4()}-${file.originalname}`);
+      cb(null, `images/${uuidv4()}-${file.originalname}`);
     },
   }) : multer.memoryStorage(), // Use memory storage for demo mode
 });

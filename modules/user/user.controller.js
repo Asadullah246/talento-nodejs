@@ -190,25 +190,73 @@ const updateUser = async (req, res, next) => {
     }
 };
 
-const getAllUsers = async (req, res, next) => {
-    try {
-        const userId = req.tokenPayLoad._id; // Get the logged-in user's ID
+// const getAllUsers = async (req, res, next) => {
+//     try {
+//         const userId = req.tokenPayLoad._id; // Get the logged-in user's ID
 
-        // Retrieve all users excluding the current user
-        const users = await User.find({
-            _id: { $ne: userId } // Exclude the current user by using $ne (not equal)
-        });
+//         // Retrieve all users excluding the current user
+//         const users = await User.find({
+//             _id: { $ne: userId } // Exclude the current user by using $ne (not equal)
+//         });
 
-        // Return the users in the response
-        res.status(200).send({
-            status: true,
-            users
-        });
-    } catch (error) {
-        console.error('Error retrieving users:', error);
-        next(error); // Pass error to the error handler middleware
+//         // Return the users in the response
+//         res.status(200).send({
+//             status: true,
+//             users
+//         });
+//     } catch (error) {
+//         console.error('Error retrieving users:', error);
+//         next(error); // Pass error to the error handler middleware
+//     }
+// };
+
+const getAllUsers= async (req, res, next) => {
+  try {
+    // const { userId } = req.body;
+    const { page = 1, limit = 10, userId } = req.query;
+    console.log("req query", req.query);
+    if (userId !== req.tokenPayLoad._id.toString()) {
+      res.send({
+        status: false,
+        message: "Invalid User !",
+      });
     }
+
+
+
+        // Calculate the number of documents to skip
+        const skip = (page - 1) * limit;
+
+        const postDb = await User.find({ _id: { $ne: userId }})
+          .skip(skip)
+          .limit(Number(limit))
+        //   .populate('user', 'userName profilePicture');
+
+    if (!postDb || postDb.length === 0) {
+
+        console.log("no data found");
+        return res.send({
+          status: false,
+          message: "Not found any post",
+        });
+      }
+      const totalPosts = await User.countDocuments({});  
+      const totalPages = Math.ceil(totalPosts / limit);
+console.log("sending data");
+      res.send({
+        status: true,
+        users: postDb,
+        totalPages,
+        currentPage: Number(page),
+        message: "Post retrieved successfully",
+      });
+
+  } catch ({ message }) {
+    console.log("message", message);
+    next(message);
+  }
 };
+
 
 const suggestUsers = async (req, res, next) => {
     try {

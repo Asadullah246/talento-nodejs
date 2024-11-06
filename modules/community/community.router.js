@@ -9,15 +9,15 @@ const {
     getMyCommunities,
     getAdminOrModeratorCommunities
 } = require('./community.controller');
-// const {upload} = require('../../config/multerConfig');
+const { upload } = require('../../config/multerConfig');
 
 const communityRouter = express.Router();
 
 // writes the routers community here
 
 communityRouter.post('/createCommunity',
-    //  checkToken,
-    //   upload.single('communityPicture'),
+     checkToken,
+      upload.single('fileUploads'),
        createCommunity);
 communityRouter.post('/addModerator', checkToken, addModerator);
 communityRouter.post('/removeModerator', checkToken, removeModerator);

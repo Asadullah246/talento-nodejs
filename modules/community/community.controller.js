@@ -29,10 +29,19 @@ const Community = require('./community.model');
 
  const createCommunity = async (req, res, next) => {
 
-    console.log("calling this ");
+    console.log("calling create communitty ");
     try {
-      const { communityName, description } = req.body;
-      const userId = req?.tokenPayLoad?._id; // User ID of the person creating the community
+      const { communityName, description, userId, fileType } = req.body;
+      console.log("req body", req. body);
+
+
+    if (userId !== req.tokenPayLoad._id.toString()) {
+        res.send({
+          status: false,
+
+          message: "Invalid User !",
+        });
+      }
 
       if (!req.file) {
         return res.status(400).send({
@@ -45,8 +54,8 @@ const Community = require('./community.model');
 
       // Create a new community with the user as the communityAdmin
       const community = await Community.create({
-        communityName,
-        description,
+        communityName:communityName,
+        description:description,
         communityPicture: communityPictureUrl,
         communityAdmin: [userId], // The user who creates the community becomes the admin
         communityModerator: [],

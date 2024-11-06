@@ -77,7 +77,7 @@ const getPost= async (req, res, next) => {
     // const { userId } = req.body;
     const { page = 1, limit = 10, userId } = req.query;
     console.log("req query", req.query);
-    console.log("user", userId,req.tokenPayLoad._id.toString() );
+    console.log("user", userId,req.tokenPayLoad._id.toString() ); 
     if (userId !== req.tokenPayLoad._id.toString()) {
       res.send({
         status: false,
