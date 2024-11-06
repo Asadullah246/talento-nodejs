@@ -16,7 +16,7 @@ const notificationSchema = new mongoose.Schema(
         },
         notificationType: {
             type: String,
-            enum: ['like', 'comment', 'follow'], // Types of notifications
+            enum: ['like', 'comment', 'follow','invitation'], // Types of notifications
             required: true
         },
         post: {
@@ -26,6 +26,11 @@ const notificationSchema = new mongoose.Schema(
         },
         comment: {
             // If related to a comment (optional)
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Comment'
+        },
+        community: {
+            // If related to a community (optional)
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Comment'
         },
