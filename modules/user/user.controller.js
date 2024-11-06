@@ -234,7 +234,7 @@ const updateUser = async (req, res, next) => {
 const getAllUsers = async (req, res, next) => {
   try {
     // const { userId } = req.body;
-    const { page = 1, limit = 10, userId } = req.query;
+    const { page = 1, limit = 50, userId } = req.query;
     console.log("req query", req.query);
     if (userId !== req.tokenPayLoad._id.toString()) {
       res.send({
@@ -278,7 +278,7 @@ const getUnjoinedUsers = async (req, res, next) => {
 
 
     try {
-      const { page = 1, limit = 10, userId, specialId } = req.query;
+      const { page = 1, limit = 50, userId, specialId } = req.query;
 console.log("req, quer", req.query);
       if (!specialId) {
         return res.status(400).send({
@@ -348,11 +348,11 @@ console.log("current followers " , currentUser.followers);
       // Calculate total pages based on combinedUsers array
       const totalPages = Math.ceil(combinedUsers.length / limit);
 
-      console.log("data is ", paginatedUsers);
+    //   console.log("data is ", paginatedUsers);
 
       res.send({
         status: true,
-        communities: paginatedUsers, 
+        communities: paginatedUsers,
         totalPages,
         currentPage: Number(page),
         message: "Unjoined users retrieved successfully",

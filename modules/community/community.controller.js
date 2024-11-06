@@ -174,6 +174,7 @@ const inviteUserToCommunity = async (req, res, next) => {
 
         // Find the community by ID
         const community = await Community.findById(communityId);
+        console.log("community", community);
 
         if (!community) {
             return res.status(404).send({ status: false, message: 'Community not found' });
@@ -201,7 +202,7 @@ const inviteUserToCommunity = async (req, res, next) => {
         if (community.invitedPeople.includes(userIdToInvite)) {
             return res
                 .status(400)
-                .send({ status: false, message: 'User has already been invited' });
+                .send({ status: true, message: 'User has already been invited' });
         }
 
         // Add the user to the invitedPeople array
@@ -322,6 +323,80 @@ const getMyCommunities = async (req, res, next) => {
     }
 };
 
+const forYouCommunities = async (req, res, next) => {
+    try {
+        const userId = req.tokenPayLoad._id;
+        const { page = 1, limit = 50 } = req.query;
+
+        // Calculate the number of documents to skip for pagination
+        const skip = (page - 1) * limit;
+
+        // Use aggregation to get random communities, excluding those the user is part of
+        const communities = await Community.aggregate([
+            // Match communities where userId is not in any of these arrays
+            {
+                $match: {
+                    communityPeople: { $nin: [userId] },
+                    communityAdmin: { $nin: [userId] },
+                    communityModerator: { $nin: [userId] }
+                }
+            },
+            // Randomly sort the matched communities
+            { $sample: { size: 1000 } }, // Set a large enough sample size to ensure randomness
+            // Paginate by skipping and limiting the sample
+            { $skip: skip },
+            { $limit: Number(limit) }
+        ]);
+
+        // Count the total number of communities matching the filter for pagination
+        const totalCommunities = await Community.countDocuments({
+            communityPeople: { $nin: [userId] },
+            communityAdmin: { $nin: [userId] },
+            communityModerator: { $nin: [userId] }
+        });
+
+        const totalPages = Math.ceil(totalCommunities / limit);
+
+        res.status(200).send({
+            status: true,
+            communities,
+            totalPages,
+            currentPage: Number(page),
+            message: "Random communities retrieved successfully"
+        });
+    } catch (error) {
+        console.error("Error retrieving communities:", error);
+        next(error);
+    }
+};
+
+
+
+
+const getSingleCommunity = async (req, res, next) => {
+    try {
+        const userId = req.tokenPayLoad._id; // Extract user ID from token payload
+const {specialId} =req.query ;
+        // Find communities where the user is in communityPeople array
+        const communities = await Community.findOne({ _id: specialId });
+
+        // if (!communities || communities.length === 0) {
+        //     return res.status(404).send({
+        //         status: false,
+        //         message: 'You are not part of any community'
+        //     });
+        // }
+
+        res.status(200).send({
+            status: true,
+            communities
+        });
+    } catch (error) {
+        console.error('Error retrieving communities you belong to:', error);
+        next(error);
+    }
+};
+
 const getAdminOrModeratorCommunities = async (req, res, next) => {
     try {
         const userId = req.tokenPayLoad._id; // Extract user ID from token payload
@@ -357,5 +432,7 @@ module.exports = {
     getAllCommunities,
     getInvitedCommunities,
     getMyCommunities,
-    getAdminOrModeratorCommunities
+    getAdminOrModeratorCommunities,
+    getSingleCommunity,
+    forYouCommunities,
 };

@@ -7,7 +7,9 @@ const {
     acceptCommunityInvitation,
     removeModerator,
     getMyCommunities,
-    getAdminOrModeratorCommunities
+    getAdminOrModeratorCommunities,
+    getSingleCommunity,
+    forYouCommunities
 } = require('./community.controller');
 const { upload } = require('../../config/multerConfig');
 
@@ -25,6 +27,8 @@ communityRouter.post('/removeModerator', checkToken, removeModerator);
 communityRouter.post('/inviteUserToCommunity', checkToken, inviteUserToCommunity);
 communityRouter.post('/acceptCommunityInvitation', checkToken, acceptCommunityInvitation);
 communityRouter.get('/getMyCommunities', checkToken, getMyCommunities);
+communityRouter.get('/forYouCommunities', checkToken, forYouCommunities);
+communityRouter.get('/getMyCommunities/:communityId', checkToken, getSingleCommunity); 
 communityRouter.get('/getAdminOrModeratorCommunities', checkToken, getAdminOrModeratorCommunities);
 
 module.exports = {

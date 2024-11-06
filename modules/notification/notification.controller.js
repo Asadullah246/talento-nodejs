@@ -61,11 +61,11 @@ const markAllNotificationsAsRead = async (req, res, next) => {
 const createNotification = async (req, res, next) => {
   console.log("Creating a new notification");
   try {
-    const { recipient, sender, notificationType, post, comment, community, message } = req.body;
+    const { recipient, sender, notificationType, post, comment, community, message, link } = req.body;
     console.log("Request body:", req.body);
 
     // Validate notification type
-    if (!['like', 'comment', 'follow', 'invitation'].includes(notificationType)) {
+    if (!['like', 'comment', 'follow', 'invitation',"invitationToCommunity"].includes(notificationType)) {
       return res.status(400).send({
         status: false,
         message: "Invalid notification type!",
@@ -89,6 +89,7 @@ const createNotification = async (req, res, next) => {
       comment,   // Optional, only included if provided in request
       community, // Optional, only included if provided in request
       message,
+      link,
       read: false, // Default value, notification is unread initially
     });
 

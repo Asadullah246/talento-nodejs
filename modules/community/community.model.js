@@ -5,12 +5,13 @@ const communitySchema = new mongoose.Schema(
         communityName: {
             type: String,
             required: true,
-            unique: true 
+            unique: true
         },
         description: {
             type: String,
             required: true
         },
+      
         communityPicture: {
             type: String,
             required: false
