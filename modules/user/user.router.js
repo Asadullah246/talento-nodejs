@@ -7,7 +7,8 @@ const {
     unFollowUser,
     updateUser,
     getAllUsers,
-    suggestUsers
+    suggestUsers,
+    getUnjoinedUsers
 } = require('./user.controller');
 const userRouter = express.Router();
 
@@ -20,6 +21,7 @@ userRouter.post('/unFollowUser', checkToken, unFollowUser);
 userRouter.post('/updateUser', checkToken, updateUser);
 userRouter.get('/getAllUsers', checkToken, getAllUsers);
 userRouter.get('/suggestUsers', checkToken, suggestUsers);
+userRouter.get('/getUnjoinedUsers/:communityId', checkToken, getUnjoinedUsers);
 
 module.exports = {
     userRouter
