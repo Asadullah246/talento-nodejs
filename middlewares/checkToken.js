@@ -40,6 +40,7 @@ const checkToken = async (req, res, next) => {
 
                 // console.log(userDb, 'userDB form checkToken');
             }
+            console.log("going next");
 
             next();
         } catch ({ message }) {

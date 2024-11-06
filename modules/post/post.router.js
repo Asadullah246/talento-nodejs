@@ -4,7 +4,8 @@ const {
     createPost,
     getPostByUserId,
     deletePostByUserIdPostId,
-    getPaginatedPosts
+    getPaginatedPosts,
+    getPost,
 } = require('./post.controller');
 const { upload } = require('../../config/multerConfig');
 // const multer  = require('multer')
@@ -22,6 +23,7 @@ postRouter.post('/createPost', checkToken, upload.single('fileUploads'), (req, r
 
 
 postRouter.get('/getPostByUserId', checkToken, getPostByUserId);
+postRouter.get('/getPost', checkToken, getPost);
 postRouter.delete('/deletePostByUserIdPostId', checkToken, deletePostByUserIdPostId);
 postRouter.get('/getPaginatedPosts', checkToken, getPaginatedPosts);
 
