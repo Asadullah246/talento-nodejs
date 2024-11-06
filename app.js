@@ -43,10 +43,10 @@ app.use('/notification', notificationRouter);
 
 // not found any route error : 404
 app.use((req, res, next) => {
-    console.log('no route found!');
+    console.log('no route found! test');
     res.send({
         status: false,
-        message: 'No route Found '
+        message: 'No route Found test '
     });
 });
 
