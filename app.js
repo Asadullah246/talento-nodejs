@@ -5,7 +5,8 @@ const cors = require('cors'); // cors
 const { authRouter } = require('./modules/auth/auth.router');
 const { userRouter } = require('./modules/user/user.router');
 const { postRouter } = require('./modules/post/post.router');
-const { commentRouter } = require('./modules/comment/comment.router');
+// const { commentRouter } = require('./modules/comment/comment.router');
+const { commentRouter } = require('./modules/commentModule/comment.router');
 const { communityRouter } = require('./modules/community/community.router');
 const { likeRouter } = require('./modules/like/like.router');
 const { notificationRouter } = require('./modules/notification/notification.router');
@@ -43,10 +44,10 @@ app.use('/notification', notificationRouter);
 
 // not found any route error : 404
 app.use((req, res, next) => {
-    console.log('no route found! test');
+    console.log('no route found!');
     res.send({
         status: false,
-        message: 'No route Found test '
+        message: 'No route Found '
     });
 });
 

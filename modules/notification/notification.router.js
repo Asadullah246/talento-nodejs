@@ -14,7 +14,8 @@ notificationRouter.put('/:notificationId/read', markNotificationAsRead);
 
 // Route to mark all unread notifications as read
 notificationRouter.put('/markAllAsRead', markAllNotificationsAsRead);
+notificationRouter.put('/markAllAsRead', markAllNotificationsAsRead);
 
-module.exports = { 
+module.exports = {
     notificationRouter
 };

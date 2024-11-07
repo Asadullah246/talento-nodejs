@@ -157,7 +157,7 @@ const createPost = async (req, res, next) => {
       if (fileType === "image") {
         imageUrl = fileUrl;
       } else if (fileType === "video") {
-        videoUrl = fileUrl;
+        videoUrl = fileUrl; 
       }
     }
 

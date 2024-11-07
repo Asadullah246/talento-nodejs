@@ -423,6 +423,65 @@ const getAdminOrModeratorCommunities = async (req, res, next) => {
     }
 };
 
+const updateCommunity = async (req, res, next) => {
+    try {
+      const userId = req.tokenPayLoad._id; // Extract user ID from token payload
+      const { communityId,communityName,fileType,description  } = req.body; // Get communityId and the updates to apply from request body
+      console.log(("body", req.body));
+
+      // Find the community where the user is in the communityAdmin array, as only admins can update
+      const community = await Community.findOne({
+        _id: communityId,
+        $or: [{ communityAdmin: userId }, { communityModerator: userId }],
+      });
+
+      if (!community) {
+        return res.status(404).send({
+          status: false,
+          message: 'Community not found or you do not have permission to update this community',
+        });
+      }
+      const updates={
+        communityName,
+        description,
+
+      } 
+
+      let communityPic = "";
+console.log("file ", req.file);
+      if (req.file) {
+        const fileUrl = req.file.location;
+        console.log("file url", fileUrl);
+        if (fileType === "image") {
+          communityPic = fileUrl;
+        } else {
+          return res.status(404).send({
+              status: false,
+              message: 'unsupported Image',
+            });
+        }
+        }
+        updates.communityPicture= communityPic ;
+
+      // Apply the updates to the found community
+      Object.assign(community, updates);
+
+      // Save the updated community to the database
+      await community.save();
+
+      res.status(200).send({
+        status: true,
+        message: 'Community updated successfully',
+        community,
+      });
+    } catch (error) {
+      console.error('Error updating community:', error);
+      next(error);
+    }
+  };
+
+
+
 module.exports = {
     createCommunity,
     addModerator,
@@ -435,4 +494,5 @@ module.exports = {
     getAdminOrModeratorCommunities,
     getSingleCommunity,
     forYouCommunities,
+    updateCommunity,
 };

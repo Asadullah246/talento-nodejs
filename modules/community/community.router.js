@@ -9,7 +9,8 @@ const {
     getMyCommunities,
     getAdminOrModeratorCommunities,
     getSingleCommunity,
-    forYouCommunities
+    forYouCommunities,
+    updateCommunity
 } = require('./community.controller');
 const { upload } = require('../../config/multerConfig');
 
@@ -28,9 +29,11 @@ communityRouter.post('/inviteUserToCommunity', checkToken, inviteUserToCommunity
 communityRouter.post('/acceptCommunityInvitation', checkToken, acceptCommunityInvitation);
 communityRouter.get('/getMyCommunities', checkToken, getMyCommunities);
 communityRouter.get('/forYouCommunities', checkToken, forYouCommunities);
-communityRouter.get('/getMyCommunities/:communityId', checkToken, getSingleCommunity); 
+communityRouter.get('/getMyCommunities/:communityId', checkToken, getSingleCommunity);
 communityRouter.get('/getAdminOrModeratorCommunities', checkToken, getAdminOrModeratorCommunities);
+communityRouter.put('/updateCommunity', checkToken, upload.single('fileUploads'), updateCommunity);
+communityRouter.get('/getSingleCommunity', checkToken, updateCommunity);
 
-module.exports = {
+module.exports = { 
     communityRouter
 };
