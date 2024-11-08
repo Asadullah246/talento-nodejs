@@ -10,7 +10,8 @@ const {
     suggestUsers,
     getUnjoinedUsers,
     searchUsers,
-    checkFollow
+    checkFollow,
+    getUserById
 } = require('./user.controller');
 const { upload } = require('../../config/multerConfig');
 const userRouter = express.Router();
@@ -21,9 +22,10 @@ userRouter.post('/userOtpSend', userOtpSend);
 userRouter.post('/userOtpVerify', userOtpVerify);
 userRouter.post('/followUser', checkToken, followUser);
 userRouter.post('/checkFollow', checkToken, checkFollow);
-userRouter.post('/unFollowUser', checkToken, unFollowUser); 
+userRouter.post('/unFollowUser', checkToken, unFollowUser);
 userRouter.post('/updateUser', checkToken, upload.single('fileUploads'), updateUser);
 userRouter.get('/getAllUsers', checkToken, getAllUsers);
+userRouter.get('/getUserById', checkToken, getUserById);
 userRouter.get('/searchUsers', checkToken, searchUsers);
 userRouter.get('/suggestUsers', checkToken, suggestUsers);
 userRouter.get('/getUnjoinedUsers/:communityId', checkToken, getUnjoinedUsers);

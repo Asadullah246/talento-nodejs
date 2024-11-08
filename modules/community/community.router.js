@@ -31,7 +31,7 @@ communityRouter.get('/getMyCommunities', checkToken, getMyCommunities);
 communityRouter.get('/forYouCommunities', checkToken, forYouCommunities);
 communityRouter.get('/getMyCommunities/:communityId', checkToken, getSingleCommunity);
 communityRouter.get('/getAdminOrModeratorCommunities', checkToken, getAdminOrModeratorCommunities);
-communityRouter.put('/updateCommunity', checkToken, upload.single('fileUploads'), updateCommunity);
+communityRouter.post('/updateCommunity', checkToken, upload.single('fileUploads'), updateCommunity);
 communityRouter.get('/getSingleCommunity', checkToken, updateCommunity);
 
 module.exports = { 

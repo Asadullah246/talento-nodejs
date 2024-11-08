@@ -1,3 +1,6 @@
+
+// const mongoose = require('mongoose');
+// const { ObjectId } = mongoose.Types;
 const { OTP_TIME_LIMIT } = require("../../libs/variables");
 const Community = require("../community/community.model");
 const {
@@ -253,7 +256,7 @@ const unFollowUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const userId = req.tokenPayLoad._id; // Get the current user's ID from token payload
-    const { userName, password , fileType} = req.body; 
+    const { userName, bio, password , fileType} = req.body;
 
     console.log("redbody", req.body);
 
@@ -278,6 +281,9 @@ const updateUser = async (req, res, next) => {
     // Update userName if provided
     if (userName) {
       user.userName = userName;
+    }
+    if (bio) {
+      user.bio = bio; 
     }
 
     // Update password if provided and hash the new password
@@ -381,6 +387,46 @@ const getAllUsers = async (req, res, next) => {
     });
   } catch ({ message }) {
     console.log("message", message);
+    next(message);
+  }
+};
+
+const getUserById = async (req, res, next) => {
+  try {
+    const { userId, specialId } = req.query;
+    // console.log("que", req.query);
+
+    // if (!ObjectId.isValid(specialId)) {
+    //   return res.status(400).send({ status: false, message: "Invalid ID format" });
+    // }
+
+    // console.log("speci", ObjectId(specialId));
+    // Validate the userId
+    if (userId !== req.tokenPayLoad._id.toString()) {
+      return res.send({
+        status: false,
+        message: "Invalid User!",
+      });
+    }
+
+    // Find the post by its ID and populate the user field
+    const postDb = await User.findOne({ _id: specialId }) ;
+// console.log("post db", postDb);
+    // Check if post exists
+    if (!postDb) {
+      return res.send({
+        status: false,
+        message: "Not found any user",
+      });
+    }
+
+    // Send the post with the populated user details
+    res.send({
+      status: true,
+      user: postDb,
+      message: "Post retrieved successfully",
+    });
+  } catch ({ message }) {
     next(message);
   }
 };
@@ -526,4 +572,5 @@ module.exports = {
   getUnjoinedUsers,
   searchUsers,
   checkFollow,
+  getUserById
 };

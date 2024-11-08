@@ -7,7 +7,8 @@ const {
     getPaginatedPosts,
     getPost,
     getPostById,
-    sharePost 
+    getPostsById,
+    sharePost
 } = require('./post.controller');
 const { upload } = require('../../config/multerConfig');
 // const multer  = require('multer')
@@ -28,6 +29,7 @@ postRouter.post('/sharePost', checkToken, sharePost );
 postRouter.get('/getPostByUserId', checkToken, getPostByUserId);
 postRouter.get('/getPost', checkToken, getPost);
 postRouter.get('/getPostById', checkToken, getPostById);
+postRouter.get('/getPostsById', checkToken, getPostsById);
 postRouter.delete('/deletePostByUserIdPostId', checkToken, deletePostByUserIdPostId);
 postRouter.get('/getPaginatedPosts', checkToken, getPaginatedPosts);
 

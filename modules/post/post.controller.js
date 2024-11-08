@@ -72,7 +72,6 @@ const getPostByUserId = async (req, res, next) => {
   }
 };
 
-
 const getPostById = async (req, res, next) => {
   try {
     const { specialId, userId } = req.query;
@@ -86,8 +85,10 @@ const getPostById = async (req, res, next) => {
     }
 
     // Find the post by its ID and populate the user field
-    const postDb = await Post.findOne({ _id: specialId })
-      .populate('user', '_id userName profilePicture'); // Populate user field with userName and profilePicture
+    const postDb = await Post.findOne({ _id: specialId }).populate(
+      "user",
+      "_id userName profilePicture"
+    ); // Populate user field with userName and profilePicture
 
     // Check if post exists
     if (!postDb) {
@@ -108,14 +109,96 @@ const getPostById = async (req, res, next) => {
   }
 };
 
-const getPost= async (req, res, next) => {
 
-    console.log("calling this");
+const getPostsById = async (req, res, next) => {
+  try {
+    const { specialId, userId } = req.query;
+
+    // Validate the userId
+    if (userId !== req.tokenPayLoad._id.toString()) {
+      return res.send({
+        status: false,
+        message: "Invalid User!",
+      });
+    }
+
+    // Fetch posts with videoUrl first, then imageUrl, then others, all sorted by latest to oldest
+
+    const postsWithVideo = await Post.find({
+      user: specialId,
+      videoUrl: { $exists: true, $ne: null, $ne: "" },
+    }).sort({ createdAt: -1 });
+    const postsWithImage = await Post.find({
+      user: specialId,
+      $and: [
+        {
+          $or: [
+            { videoUrl: { $exists: false } },
+            { videoUrl: null },
+            { videoUrl: "" },
+          ],
+        },
+        {
+          imageUrl: { $exists: true, $ne: null, $ne: "" },
+        },
+      ],
+    }).sort({ createdAt: -1 });
+
+    const otherPosts = await Post.find({
+      user: specialId,
+      $and: [
+        {
+          $or: [
+            { videoUrl: { $exists: false } },
+            { videoUrl: null },
+            { videoUrl: "" },
+          ],
+        },
+        {
+          $or: [
+            { imageUrl: { $exists: false } },
+            { imageUrl: null },
+            { imageUrl: "" },
+          ],
+        },
+      ],
+    }).sort({ createdAt: -1 });
+
+
+    // Combine all posts
+    const postDb = [...postsWithVideo, ...postsWithImage, ...otherPosts];
+
+
+    // get in simple way
+    
+    // const postDb = await Post.find({ user: specialId });
+
+    // Check if posts exist
+    if (postDb.length === 0) {
+      return res.send({
+        status: false,
+        message: "Not found any post",
+      });
+    }
+
+    // Send the post with the populated user details
+    res.send({
+      status: true,
+      posts: postDb,
+      message: "Post retrieved successfully",
+    });
+  } catch ({ message }) {
+    next(message);
+  }
+};
+
+const getPost = async (req, res, next) => {
+  console.log("calling this");
   try {
     // const { userId } = req.body;
     const { page = 1, limit = 50, userId } = req.query;
     // console.log("req query", req.query);
-    console.log("user", userId,req.tokenPayLoad._id.toString() );
+    console.log("user", userId, req.tokenPayLoad._id.toString());
     if (userId !== req.tokenPayLoad._id.toString()) {
       res.send({
         status: false,
@@ -124,32 +207,30 @@ const getPost= async (req, res, next) => {
       });
     }
 
+    // Calculate the number of documents to skip
+    const skip = (page - 1) * limit;
 
-
-        // Calculate the number of documents to skip
-        const skip = (page - 1) * limit;
-
-        const postDb = await Post.find({})
-          .skip(skip)
-          .limit(Number(limit))
-          .populate('user', 'userName profilePicture');
+    const postDb = await Post.find({})
+      .skip(skip)
+      .limit(Number(limit))
+      .populate("user", "userName profilePicture");
 
     if (!postDb || postDb.length === 0) {
-        return res.send({
-          status: false,
-          message: "Not found any post",
-        });
-      }
-      const totalPosts = await Post.countDocuments({});
-      const totalPages = Math.ceil(totalPosts / limit);
-
-      res.send({
-        status: true,
-        posts: postDb,
-        totalPages,
-        currentPage: Number(page),
-        message: "Post retrieved successfully",
+      return res.send({
+        status: false,
+        message: "Not found any post",
       });
+    }
+    const totalPosts = await Post.countDocuments({});
+    const totalPages = Math.ceil(totalPosts / limit);
+
+    res.send({
+      status: true,
+      posts: postDb,
+      totalPages,
+      currentPage: Number(page),
+      message: "Post retrieved successfully",
+    });
 
     // const postDb = await Post.find({});
     // if (!postDb) {
@@ -248,37 +329,37 @@ const deletePostByUserIdPostId = async (req, res, next) => {
   }
 };
 
-
 const sharePost = async (req, res, next) => {
   try {
-      const userId = req.tokenPayLoad._id; // Current user ID
-      const { postId, description } = req.body;
+    const userId = req.tokenPayLoad._id; // Current user ID
+    const { postId, description } = req.body;
 
-      // Ensure the post exists
-      const originalPost = await Post.findById(postId);
-      if (!originalPost) {
-          return res.status(404).send({ status: false, message: 'Original post not found' });
-      }
+    // Ensure the post exists
+    const originalPost = await Post.findById(postId);
+    if (!originalPost) {
+      return res
+        .status(404)
+        .send({ status: false, message: "Original post not found" });
+    }
 
-      // Create a new post, indicating it's a shared post
-      const sharedPost = await Post.create({
-          user: userId,
-          sharedPost: postId,
-          description: originalPost.description,
-          imageUrl: originalPost.imageUrl,
-          videoUrl: originalPost.videoUrl
-      });
+    // Create a new post, indicating it's a shared post
+    const sharedPost = await Post.create({
+      user: userId,
+      sharedPost: postId,
+      description: originalPost.description,
+      imageUrl: originalPost.imageUrl,
+      videoUrl: originalPost.videoUrl,
+    });
 
-      res.status(201).send({
-          status: true,
-          post: sharedPost,
-          message: 'Post shared successfully'
-      });
+    res.status(201).send({
+      status: true,
+      post: sharedPost,
+      message: "Post shared successfully",
+    });
   } catch (error) {
-      next(error);
+    next(error);
   }
 };
-
 
 module.exports = {
   deletePostByUserIdPostId,
@@ -287,5 +368,6 @@ module.exports = {
   getPaginatedPosts,
   getPost,
   getPostById,
-  sharePost
+  getPostsById,
+  sharePost,
 };

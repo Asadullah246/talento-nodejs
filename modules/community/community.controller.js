@@ -29,7 +29,7 @@ const Community = require('./community.model');
 
  const createCommunity = async (req, res, next) => {
 
-    console.log("calling create communitty ");
+
     try {
       const { communityName, description, userId, fileType } = req.body;
       console.log("req body", req. body);
@@ -427,7 +427,6 @@ const updateCommunity = async (req, res, next) => {
     try {
       const userId = req.tokenPayLoad._id; // Extract user ID from token payload
       const { communityId,communityName,fileType,description  } = req.body; // Get communityId and the updates to apply from request body
-      console.log(("body", req.body));
 
       // Find the community where the user is in the communityAdmin array, as only admins can update
       const community = await Community.findOne({
@@ -445,13 +444,11 @@ const updateCommunity = async (req, res, next) => {
         communityName,
         description,
 
-      } 
+      }
 
       let communityPic = "";
-console.log("file ", req.file);
       if (req.file) {
         const fileUrl = req.file.location;
-        console.log("file url", fileUrl);
         if (fileType === "image") {
           communityPic = fileUrl;
         } else {
