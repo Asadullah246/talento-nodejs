@@ -458,7 +458,10 @@ const updateCommunity = async (req, res, next) => {
             });
         }
         }
-        updates.communityPicture= communityPic ;
+        if(communityPic && communityPic != ""){
+            updates.communityPicture= communityPic ; 
+        }
+
 
       // Apply the updates to the found community
       Object.assign(community, updates);
