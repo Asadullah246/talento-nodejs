@@ -31,21 +31,21 @@ let onlineUsers = new Map();
 server.listen(PORT, async () => {
   try {
     await connectDB();
-    console.log('db connected');
+    // console.log('db connected');
 
     // Socket.io connection
     io.on('connection', (socket) => {
-      console.log('A user connected:', socket.id);
+    //   console.log('A user connected:', socket.id);
 
       // Register user
       socket.on('register', async (userId) => {
         onlineUsers.set(userId, socket.id); // Map userId to socketId
-        console.log(`User with ID ${userId} is now online`);
+        // console.log(`User with ID ${userId} is now online`);
 
         // Notify all clients that the user is online
         const user = await User.findById(userId).select('userName profilePicture');
         if (user) {
-            console.log("user found", user);
+            // console.log("user found", user);
           io.emit('userOnline', {
             userId,
             userName: user.userName,
@@ -70,14 +70,14 @@ server.listen(PORT, async () => {
             receiver: receiverId
           });
           await newChat.save(); // Save message to DB
-          console.log("online users", onlineUsers);
+        //   console.log("online users", onlineUsers);
 
           const receiverSocketId = onlineUsers.get(receiverId);
-          console.log("reciver socke id", receiverSocketId);
+        //   console.log("reciver socke id", receiverSocketId);
 
           // If the receiver is online, emit the message
           if (receiverSocketId) {
-            io.to(receiverSocketId).emit('newMessage', { 
+            io.to(receiverSocketId).emit('newMessage', {
               senderId,
               message,
               createdAt: newChat.createdAt

@@ -17,6 +17,97 @@ const getNotifications = async (req, res, next) => {
         next(error);
     }
 };
+
+const getNotificationsWithOutMarking = async (req, res, next) => {
+  try {
+      const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
+      const { page = 1, limit = 50 } = req.query;
+
+      // Calculate the number of documents to skip
+      const skip = (page - 1) * limit;
+
+      // Use aggregation to sort the notifications in two groups: unread first, then read
+      const notifications = await Notification.aggregate([
+          {
+              $match: {
+                  recipient: userId
+              }
+          },
+          {
+              $facet: {
+                  unread: [
+                      { $match: { read: false } },
+                      { $sort: { createdAt: -1 } },
+                  ],
+                  read: [
+                      { $match: { read: true } },
+                      { $sort: { createdAt: -1 } },
+                  ]
+              }
+          },
+          {
+              $project: {
+                  notifications: {
+                      $concatArrays: ['$unread', '$read']
+                  }
+              }
+          },
+          { $unwind: '$notifications' },
+          { $replaceRoot: { newRoot: '$notifications' } },
+          { $skip: skip },
+          { $limit: Number(limit) }
+      ]);
+
+      // Count total notifications for pagination
+      const totalNotifications = await Notification.countDocuments({ recipient: userId });
+      const totalPages = Math.ceil(totalNotifications / limit);
+
+      res.status(200).send({
+          status: true,
+          notifications,
+          totalPages,
+          currentPage: Number(page),
+          limit,
+          message: "Notifications retrieved successfully"
+      });
+  } catch (error) {
+      next(error);
+  }
+};
+
+
+// const getNotificationsWithOutMarking = async (req, res, next) => {
+//   try {
+//       const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
+//       const { page = 1, limit = 50 } = req.query;
+
+//       // Calculate the number of documents to skip
+//       const skip = (page - 1) * limit;
+
+//       // Fetch notifications for the logged-in user with pagination
+//       const notifications = await Notification.find({ recipient: userId })
+//           .populate('sender', 'userName profilePicture') // Populate sender details
+//           .sort({ createdAt: -1 }) // Sort by newest first
+//           .skip(skip)
+//           .limit(Number(limit));
+
+//       // Count total notifications for pagination
+//       const totalNotifications = await Notification.countDocuments({ recipient: userId });
+//       const totalPages = Math.ceil(totalNotifications / limit);
+
+//       res.status(200).send({
+//           status: true,
+//           notifications,
+//           totalPages,
+//           currentPage: Number(page),
+//           limit,
+//           message: "Notifications retrieved successfully"
+//       });
+//   } catch (error) {
+//       next(error);
+//   }
+// };
+
 const getUnreadNotifications = async (req, res, next) => {
     try {
         const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
@@ -113,7 +204,8 @@ module.exports = {
     createNotification,
     getUnreadNotifications,
     markNotificationAsRead,
-    markAllNotificationsAsRead
+    markAllNotificationsAsRead,
+    getNotificationsWithOutMarking
 };
 
 

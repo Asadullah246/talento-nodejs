@@ -1,10 +1,11 @@
 const express = require('express');
 const { checkToken } = require('../../middlewares/checkToken');
-const { getNotifications, createNotification, getUnreadNotifications, markNotificationAsRead, markAllNotificationsAsRead } = require('./notification.controller');
+const { getNotifications,getNotificationsWithOutMarking, createNotification, getUnreadNotifications, markNotificationAsRead, markAllNotificationsAsRead } = require('./notification.controller');
 
 const notificationRouter = express.Router();
 
 notificationRouter.get('/getNotifications', checkToken, getNotifications);
+notificationRouter.get('/getNotificationsWithOutMarking', checkToken, getNotificationsWithOutMarking); 
 notificationRouter.post('/createNotification', checkToken, createNotification);
 // Route to get all unread notifications
 notificationRouter.get('/unread', getUnreadNotifications);

@@ -18,6 +18,10 @@ const postSchema = new mongoose.Schema(
         videoUrl: {
             type: String
         },
+        sharedPost: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post' // Reference to the original post if this is a shared post
+        },
         comments: [
             {
                 type: mongoose.Schema.Types.ObjectId,

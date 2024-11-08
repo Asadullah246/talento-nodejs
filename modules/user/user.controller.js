@@ -78,12 +78,10 @@ const followUser = async (req, res, next) => {
 
     // Check if already following
     if (currentUser.following.includes(targetUserId)) {
-      return res
-        .status(400)
-        .send({
-          status: false,
-          message: "You are already following this user",
-        });
+      return res.status(400).send({
+        status: false,
+        message: "You are already following this user",
+      });
     }
 
     // Add target user's ID to the current user's following array
@@ -104,17 +102,16 @@ const followUser = async (req, res, next) => {
     next(error);
   }
 };
-
-const unFollowUser = async (req, res, next) => {
+const checkFollow = async (req, res, next) => {
   try {
-    const { targetUserId } = req.body; // Get the user to unfollow from request params
+    const { targetUserId } = req.body; // Get the user to follow from request params
     const userId = req.tokenPayLoad._id; // Get the current user's ID from the token payload
 
-    // Ensure the user is not trying to unfollow themselves
+    // Ensure the user is not trying to follow themselves
     if (userId === targetUserId) {
       return res
         .status(400)
-        .send({ status: false, message: "You can't unfollow yourself" });
+        .send({ status: false, message: "You can't follow yourself" });
     }
 
     // Find both the current user and the target user
@@ -124,30 +121,69 @@ const unFollowUser = async (req, res, next) => {
     if (!targetUser) {
       return res
         .status(404)
-        .send({ status: false, message: "User to unfollow not found" });
+        .send({ status: false, message: "User to follow not found" });
+    }
+
+    // Check if already following
+    if (currentUser.following.includes(targetUserId)) {
+      return res.status(200).send({
+        status: true,
+        following: 1,
+        message: "You are following this user",
+      });
+    } else {
+      return res.status(200).send({
+        status: true,
+        following: 0,
+        message: "You are not following this user",
+      });
+    }
+  } catch (error) {
+    console.error("Error following user:", error);
+    next(error);
+  }
+};
+
+
+const unFollowUser = async (req, res, next) => {
+  try {
+    const { targetUserId } = req.body; // Get the user to unfollow from request body
+    const userId = req.tokenPayLoad._id; // Get the current user's ID from the token payload
+
+    // Ensure the user is not trying to unfollow themselves
+    if (userId === targetUserId) {
+      return res.status(400).send({ status: false, message: "You can't unfollow yourself" });
+    }
+
+    // Find both the current user and the target user
+    const currentUser = await User.findById(userId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser) {
+      return res.status(404).send({ status: false, message: "Current user not found" });
+    }
+
+    if (!targetUser) {
+      return res.status(404).send({ status: false, message: "User to unfollow not found" });
     }
 
     // Check if the user is following the target user
     if (!currentUser.following.includes(targetUserId)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "You are not following this user" });
+      return res.status(400).send({ status: false, message: "You are not following this user" });
     }
 
     // Remove target user's ID from the current user's following array
     currentUser.following = currentUser.following.filter(
-      (id) => id.toString() !== targetUserId
+      (id) => !id.equals(targetUserId)
     );
-    // Remove current user's ID from the target user's followers array
-    // targetUser.followers = targetUser.followers.filter((id) => id.toString() !== userId);
 
+    // Remove current user's ID from the target user's followers array
     targetUser.followers = targetUser.followers.filter(
       (id) => !id.equals(userId)
     );
 
     // Save both users
-    await currentUser.save();
-    await targetUser.save();
+    await Promise.all([currentUser.save(), targetUser.save()]); // Use Promise.all to save both users concurrently
 
     res.status(200).send({
       status: true,
@@ -158,6 +194,61 @@ const unFollowUser = async (req, res, next) => {
     next(error);
   }
 };
+
+
+// const unFollowUser = async (req, res, next) => {
+//   try {
+//     const { targetUserId } = req.body; // Get the user to unfollow from request params
+//     const userId = req.tokenPayLoad._id; // Get the current user's ID from the token payload
+
+//     // Ensure the user is not trying to unfollow themselves
+//     if (userId === targetUserId) {
+//       return res
+//         .status(400)
+//         .send({ status: false, message: "You can't unfollow yourself" });
+//     }
+
+//     // Find both the current user and the target user
+//     const currentUser = await User.findById(userId);
+//     const targetUser = await User.findById(targetUserId);
+
+//     if (!targetUser) {
+//       return res
+//         .status(404)
+//         .send({ status: false, message: "User to unfollow not found" });
+//     }
+
+//     // Check if the user is following the target user
+//     if (!currentUser.following.includes(targetUserId)) {
+//       return res
+//         .status(400)
+//         .send({ status: false, message: "You are not following this user" });
+//     }
+
+//     // Remove target user's ID from the current user's following array
+//     currentUser.following = currentUser.following.filter(
+//       (id) => id.toString() !== targetUserId
+//     );
+//     // Remove current user's ID from the target user's followers array
+//     // targetUser.followers = targetUser.followers.filter((id) => id.toString() !== userId);
+
+//     targetUser.followers = targetUser.followers.filter(
+//       (id) => !id.equals(userId)
+//     );
+
+//     // Save both users
+//     await currentUser.save();
+//     await targetUser.save();
+
+//     res.status(200).send({
+//       status: true,
+//       message: `You have unfollowed ${targetUser.userName}`,
+//     });
+//   } catch (error) {
+//     console.error("Error unfollowing user:", error);
+//     next(error);
+//   }
+// };
 
 const updateUser = async (req, res, next) => {
   try {
@@ -281,8 +372,8 @@ const searchUsers = async (req, res, next) => {
 
     // Search for users by name or other criteria
     const users = await User.find({
-      userName: { $regex: query, $options: 'i' }
-    }).select('userName profilePicture');
+      userName: { $regex: query, $options: "i" },
+    }).select("userName profilePicture");
 
     res.status(200).send({ status: true, users });
   } catch (error) {
@@ -291,98 +382,92 @@ const searchUsers = async (req, res, next) => {
   }
 };
 
-
 const getUnjoinedUsers = async (req, res, next) => {
-
-
-    try {
-      const { page = 1, limit = 50, userId, specialId } = req.query;
-console.log("req, quer", req.query);
-      if (!specialId) {
-        return res.status(400).send({
-          status: false,
-          message: "Community ID is required",
-        });
-      }
-console.log("passed special id", specialId);
-      if (userId !== req.tokenPayLoad._id.toString()) {
-        return res.send({
-          status: false,
-          message: "Invalid User!",
-        });
-      }
-console.log("passed user id", userId);
-      // Get the current user to retrieve their followers
-      const currentUser = await User.findById(userId).select('followers');
-
-      if (!currentUser) {
-        return res.status(404).send({
-          status: false,
-          message: "User not found",
-        });
-      }
-console.log("passed current user", currentUser);
-      // Find the community and get lists of associated user IDs
-      const community = await Community.findById(specialId);
-      if (!community) {
-        return res.status(404).send({
-          status: false,
-          message: "Community not found",
-        });
-      }
-      console.log("passed community", community);
-
-      // Collect IDs of users to exclude (already in the community or invited)
-      const excludedUserIds = [
-        ...community.communityAdmin,
-        ...community.communityModerator,
-        ...community.communityPeople,
-        ...community.invitedPeople,
-        userId, // Exclude the current user as well
-      ];
-
-      // Separate followers from non-followers in the unjoined user list
-      const followers = await User.find({
-        _id: { $in: currentUser.followers, $nin: excludedUserIds },
+  try {
+    const { page = 1, limit = 50, userId, specialId } = req.query;
+    console.log("req, quer", req.query);
+    if (!specialId) {
+      return res.status(400).send({
+        status: false,
+        message: "Community ID is required",
       });
-      console.log("passed followers", followers);
-console.log("current followers " , currentUser.followers);
-      const nonFollowers = await User.find({
-        _id: { $nin: [...excludedUserIds, ...currentUser.followers] },
+    }
+    console.log("passed special id", specialId);
+    if (userId !== req.tokenPayLoad._id.toString()) {
+      return res.send({
+        status: false,
+        message: "Invalid User!",
       });
-      console.log("passed followers", followers);
-      // Randomize both followers and non-followers lists
-      const randomizeArray = (arr) => arr.sort(() => Math.random() - 0.5);
-      const randomizedFollowers = randomizeArray(followers);
-      const randomizedNonFollowers = randomizeArray(nonFollowers);
+    }
+    console.log("passed user id", userId);
+    // Get the current user to retrieve their followers
+    const currentUser = await User.findById(userId).select("followers");
 
-      // Combine followers first, then other users
-      const combinedUsers = [...randomizedFollowers, ...randomizedNonFollowers];
+    if (!currentUser) {
+      return res.status(404).send({
+        status: false,
+        message: "User not found",
+      });
+    }
+    console.log("passed current user", currentUser);
+    // Find the community and get lists of associated user IDs
+    const community = await Community.findById(specialId);
+    if (!community) {
+      return res.status(404).send({
+        status: false,
+        message: "Community not found",
+      });
+    }
+    console.log("passed community", community);
 
-      // Pagination logic (slice the combined array)
-      const startIndex = (page - 1) * limit;
-      const paginatedUsers = combinedUsers.slice(startIndex, startIndex + limit);
+    // Collect IDs of users to exclude (already in the community or invited)
+    const excludedUserIds = [
+      ...community.communityAdmin,
+      ...community.communityModerator,
+      ...community.communityPeople,
+      ...community.invitedPeople,
+      userId, // Exclude the current user as well
+    ];
 
-      // Calculate total pages based on combinedUsers array
-      const totalPages = Math.ceil(combinedUsers.length / limit);
+    // Separate followers from non-followers in the unjoined user list
+    const followers = await User.find({
+      _id: { $in: currentUser.followers, $nin: excludedUserIds },
+    });
+    console.log("passed followers", followers);
+    console.log("current followers ", currentUser.followers);
+    const nonFollowers = await User.find({
+      _id: { $nin: [...excludedUserIds, ...currentUser.followers] },
+    });
+    console.log("passed followers", followers);
+    // Randomize both followers and non-followers lists
+    const randomizeArray = (arr) => arr.sort(() => Math.random() - 0.5);
+    const randomizedFollowers = randomizeArray(followers);
+    const randomizedNonFollowers = randomizeArray(nonFollowers);
+
+    // Combine followers first, then other users
+    const combinedUsers = [...randomizedFollowers, ...randomizedNonFollowers];
+
+    // Pagination logic (slice the combined array)
+    const startIndex = (page - 1) * limit;
+    const paginatedUsers = combinedUsers.slice(startIndex, startIndex + limit);
+
+    // Calculate total pages based on combinedUsers array
+    const totalPages = Math.ceil(combinedUsers.length / limit);
 
     //   console.log("data is ", paginatedUsers);
 
-      res.send({
-        status: true,
-        communities: paginatedUsers,
-        totalPages,
-        currentPage: Number(page),
-        message: "Unjoined users retrieved successfully",
-      });
-    } catch (error) {
-      console.error("Error fetching unjoined users:", error);
-      next(error);
-    }
-  };
-
-
-
+    res.send({
+      status: true,
+      communities: paginatedUsers,
+      totalPages,
+      currentPage: Number(page),
+      message: "Unjoined users retrieved successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching unjoined users:", error);
+    next(error);
+  }
+};
 
 const suggestUsers = async (req, res, next) => {
   try {
@@ -419,5 +504,6 @@ module.exports = {
   getAllUsers,
   suggestUsers,
   getUnjoinedUsers,
-  searchUsers
+  searchUsers,
+  checkFollow,
 };

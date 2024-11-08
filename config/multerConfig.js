@@ -5,8 +5,6 @@ const aws = require('aws-sdk');
 const multerS3 = require('multer-s3');
 const { v4: uuidv4 } = require('uuid');
 
-console.log("clalling multer");
-
 // Check if environment variables are available
 const hasCredentials = process.env.DO_SPACES_KEY && process.env.DO_SPACES_SECRET &&  process.env.DO_SPACES_ENDPOINT && process.env.DO_SPACES_BUCKET
 // && process.env.DO_SPACES_REGION
@@ -37,7 +35,7 @@ const upload = multer({
     },
   }) : multer.memoryStorage(), // Use memory storage for demo mode
 });
-console.log("Multer configuration complete");
+// console.log("Multer configuration complete");
 
 module.exports = {
     upload

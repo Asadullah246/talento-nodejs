@@ -70,6 +70,41 @@ const getPostByUserId = async (req, res, next) => {
     next(message);
   }
 };
+const getPostById = async (req, res, next) => {
+  try {
+    const { specialId, userId } = req.query;
+
+    // Validate the userId
+    if (userId !== req.tokenPayLoad._id.toString()) {
+      return res.send({
+        status: false,
+        message: "Invalid User!",
+      });
+    }
+
+    // Find the post by its ID and populate the user field
+    const postDb = await Post.findOne({ _id: specialId })
+      .populate('user', '_id userName profilePicture'); // Populate user field with userName and profilePicture
+
+    // Check if post exists
+    if (!postDb) {
+      return res.send({
+        status: false,
+        message: "Not found any post",
+      });
+    }
+
+    // Send the post with the populated user details
+    res.send({
+      status: true,
+      post: postDb,
+      message: "Post retrieved successfully",
+    });
+  } catch ({ message }) {
+    next(message);
+  }
+};
+
 const getPost= async (req, res, next) => {
 
     console.log("calling this");
@@ -157,7 +192,7 @@ const createPost = async (req, res, next) => {
       if (fileType === "image") {
         imageUrl = fileUrl;
       } else if (fileType === "video") {
-        videoUrl = fileUrl; 
+        videoUrl = fileUrl;
       }
     }
 
@@ -210,10 +245,44 @@ const deletePostByUserIdPostId = async (req, res, next) => {
   }
 };
 
+
+const sharePost = async (req, res, next) => {
+  try {
+      const userId = req.tokenPayLoad._id; // Current user ID
+      const { postId, description } = req.body;
+
+      // Ensure the post exists
+      const originalPost = await Post.findById(postId);
+      if (!originalPost) {
+          return res.status(404).send({ status: false, message: 'Original post not found' });
+      }
+
+      // Create a new post, indicating it's a shared post
+      const sharedPost = await Post.create({
+          user: userId,
+          sharedPost: postId,
+          description: originalPost.description,
+          imageUrl: originalPost.imageUrl,
+          videoUrl: originalPost.videoUrl
+      });
+
+      res.status(201).send({
+          status: true,
+          post: sharedPost,
+          message: 'Post shared successfully'
+      });
+  } catch (error) {
+      next(error);
+  }
+};
+
+
 module.exports = {
   deletePostByUserIdPostId,
   createPost,
   getPostByUserId,
   getPaginatedPosts,
   getPost,
+  getPostById,
+  sharePost
 };
