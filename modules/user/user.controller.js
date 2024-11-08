@@ -274,6 +274,24 @@ const getAllUsers = async (req, res, next) => {
   }
 };
 
+const searchUsers = async (req, res, next) => {
+  try {
+    const { query } = req.query;
+    console.log("query is ", query);
+
+    // Search for users by name or other criteria
+    const users = await User.find({
+      userName: { $regex: query, $options: 'i' }
+    }).select('userName profilePicture');
+
+    res.status(200).send({ status: true, users });
+  } catch (error) {
+    console.error("Error searching users:", error);
+    next(error);
+  }
+};
+
+
 const getUnjoinedUsers = async (req, res, next) => {
 
 
@@ -400,5 +418,6 @@ module.exports = {
   updateUser,
   getAllUsers,
   suggestUsers,
-  getUnjoinedUsers
+  getUnjoinedUsers,
+  searchUsers
 };

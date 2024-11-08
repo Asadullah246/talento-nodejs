@@ -8,7 +8,8 @@ const {
     updateUser,
     getAllUsers,
     suggestUsers,
-    getUnjoinedUsers
+    getUnjoinedUsers,
+    searchUsers
 } = require('./user.controller');
 const userRouter = express.Router();
 
@@ -20,6 +21,7 @@ userRouter.post('/followUser', checkToken, followUser);
 userRouter.post('/unFollowUser', checkToken, unFollowUser);
 userRouter.post('/updateUser', checkToken, updateUser);
 userRouter.get('/getAllUsers', checkToken, getAllUsers);
+userRouter.get('/searchUsers', checkToken, searchUsers); 
 userRouter.get('/suggestUsers', checkToken, suggestUsers);
 userRouter.get('/getUnjoinedUsers/:communityId', checkToken, getUnjoinedUsers);
 
