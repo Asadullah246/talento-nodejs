@@ -43,12 +43,12 @@ const createComment = async (req, res, next) => {
         recipient: parentComment.user,
         sender: userId,
         notificationType: "reply",
-        post: postId,
-        message: `replied to your comment: "${parentComment.commentContent.substring(
+        comment: postId,
+        message: `replied to your comment: "${parentComment?.commentContent?.substring(
           0,
           20
         )}..."`,
-        comment: parentCommentId,
+        comment: parentCommentId, 
       });
     } else {
       // Otherwise, it's a new comment on the post, so notify the post's author
@@ -57,7 +57,7 @@ const createComment = async (req, res, next) => {
         sender: userId,
         notificationType: "comment",
         post: postId,
-        message: `commented on your post: "${post.description.substring(
+        message: `commented on your post: "${post?.description?.substring(
           0,
           20
         )}..."`,

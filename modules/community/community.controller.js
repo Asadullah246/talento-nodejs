@@ -1,38 +1,10 @@
 const Community = require('./community.model');
 
-// const createCommunity = async (req, res, next) => {
-//     try {
-//         const { communityName, description, communityPicture } = req.body;
-//         const userId = req.tokenPayLoad._id; // User ID of the person creating the community
-
-//         // Create a new community with the user as the communityAdmin
-//         const community = await Community.create({
-//             communityName,
-//             description,
-//             communityPicture,
-//             communityAdmin: [userId], // The user who creates the community becomes the admin
-//             communityModerator: [],
-//             communityPeople: [userId], // The user is also part of the community
-//             invitedPeople: []
-//         });
-
-//         res.status(201).send({
-//             status: true,
-//             message: 'Community created successfully',
-//             community
-//         });
-//     } catch (error) {
-//         console.error('Error creating community:', error);
-//         next(error);
-//     }
-// };
-
  const createCommunity = async (req, res, next) => {
 
 
     try {
       const { communityName, description, userId, fileType } = req.body;
-      console.log("req body", req. body);
 
 
     if (userId !== req.tokenPayLoad._id.toString()) {
@@ -181,15 +153,15 @@ const inviteUserToCommunity = async (req, res, next) => {
         }
 
         // Check if the user is an admin or a moderator of the community
-        const isAdminOrModerator =
-            community.communityAdmin.includes(userId) ||
-            community.communityModerator.includes(userId);
+        // const isAdminOrModerator =
+        //     community.communityAdmin.includes(userId) ||
+        //     community.communityModerator.includes(userId);
 
-        if (!isAdminOrModerator) {
-            return res
-                .status(403)
-                .send({ status: false, message: 'Only admins or moderators can invite users' });
-        }
+        // if (!isAdminOrModerator) {
+        //     return res
+        //         .status(403)
+        //         .send({ status: false, message: 'Only admins or moderators can invite users' });
+        // }
 
         // Ensure the user to invite is not already part of the community
         if (community.communityPeople.includes(userIdToInvite)) {
@@ -459,7 +431,7 @@ const updateCommunity = async (req, res, next) => {
         }
         }
         if(communityPic && communityPic != ""){
-            updates.communityPicture= communityPic ; 
+            updates.communityPicture= communityPic ;
         }
 
 

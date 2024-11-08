@@ -5,7 +5,7 @@ const { getNotifications,getNotificationsWithOutMarking, createNotification, get
 const notificationRouter = express.Router();
 
 notificationRouter.get('/getNotifications', checkToken, getNotifications);
-notificationRouter.get('/getNotificationsWithOutMarking', checkToken, getNotificationsWithOutMarking); 
+notificationRouter.get('/getNotificationsWithOutMarking', checkToken, getNotificationsWithOutMarking);
 notificationRouter.post('/createNotification', checkToken, createNotification);
 // Route to get all unread notifications
 notificationRouter.get('/unread', getUnreadNotifications);
@@ -14,8 +14,8 @@ notificationRouter.get('/unread', getUnreadNotifications);
 notificationRouter.put('/:notificationId/read', markNotificationAsRead);
 
 // Route to mark all unread notifications as read
-notificationRouter.put('/markAllAsRead', markAllNotificationsAsRead);
-notificationRouter.put('/markAllAsRead', markAllNotificationsAsRead);
+notificationRouter.put('/markAllAsRead', checkToken, markAllNotificationsAsRead);
+// notificationRouter.put('/markAllAsRead', markAllNotificationsAsRead);
 
 module.exports = {
     notificationRouter

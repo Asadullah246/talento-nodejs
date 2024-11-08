@@ -19,61 +19,196 @@ const getNotifications = async (req, res, next) => {
 };
 
 const getNotificationsWithOutMarking = async (req, res, next) => {
-  try {
-      const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
-      const { page = 1, limit = 50 } = req.query;
+    try {
+        const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
+        const { page = 1, limit = 50 } = req.query;
 
-      // Calculate the number of documents to skip
-      const skip = (page - 1) * limit;
+        // Calculate the number of documents to skip
+        const skip = (page - 1) * limit;
 
-      // Use aggregation to sort the notifications in two groups: unread first, then read
-      const notifications = await Notification.aggregate([
-          {
-              $match: {
-                  recipient: userId
-              }
-          },
-          {
-              $facet: {
-                  unread: [
-                      { $match: { read: false } },
-                      { $sort: { createdAt: -1 } },
-                  ],
-                  read: [
-                      { $match: { read: true } },
-                      { $sort: { createdAt: -1 } },
-                  ]
-              }
-          },
-          {
-              $project: {
-                  notifications: {
-                      $concatArrays: ['$unread', '$read']
-                  }
-              }
-          },
-          { $unwind: '$notifications' },
-          { $replaceRoot: { newRoot: '$notifications' } },
-          { $skip: skip },
-          { $limit: Number(limit) }
-      ]);
+        // Fetch unread notifications for the user, sorted by createdAt descending
+        const unreadNotifications = await Notification.find({ recipient: userId, read: false })
+            .sort({ createdAt: -1 });
 
-      // Count total notifications for pagination
-      const totalNotifications = await Notification.countDocuments({ recipient: userId });
-      const totalPages = Math.ceil(totalNotifications / limit);
+        // Fetch read notifications for the user, sorted by createdAt descending
+        const readNotifications = await Notification.find({ recipient: userId, read: true })
+            .sort({ createdAt: -1 });
 
-      res.status(200).send({
-          status: true,
-          notifications,
-          totalPages,
-          currentPage: Number(page),
-          limit,
-          message: "Notifications retrieved successfully"
-      });
-  } catch (error) {
-      next(error);
-  }
+        // Combine unread and read notifications
+        let allNotifications = [...unreadNotifications, ...readNotifications];
+
+        // Populate sender details for each notification
+        allNotifications = await Notification.populate(allNotifications, {
+            path: 'sender', 
+            select: 'userName profilePicture'
+        });
+
+        // Apply pagination
+        const paginatedNotifications = allNotifications.slice(skip, skip + Number(limit));
+
+        // Calculate total pages
+        const totalNotifications = allNotifications.length;
+        const totalPages = Math.ceil(totalNotifications / limit);
+
+        res.status(200).send({
+            status: true,
+            notifications: paginatedNotifications,
+            totalPages,
+            currentPage: Number(page),
+            limit,
+            message: "Notifications retrieved successfully"
+        });
+    } catch (error) {
+        next(error);
+    }
 };
+
+
+
+// const getNotificationsWithOutMarking = async (req, res, next) => {
+//     try {
+//         const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
+//         const { page = 1, limit = 50 } = req.query;
+
+//         // Calculate the number of documents to skip
+//         const skip = (page - 1) * limit;
+
+//         // Use aggregation to sort the notifications in two groups: unread first, then read
+//         const notifications = await Notification.aggregate([
+//             {
+//                 $match: {
+//                     recipient: userId
+//                 }
+//             },
+//             {
+//                 $facet: {
+//                     unread: [
+//                         { $match: { read: false } },
+//                         { $sort: { createdAt: -1 } },
+//                     ],
+//                     read: [
+//                         { $match: { read: true } },
+//                         { $sort: { createdAt: -1 } },
+//                     ]
+//                 }
+//             },
+//             {
+//                 $project: {
+//                     notifications: {
+//                         $concatArrays: ['$unread', '$read']
+//                     }
+//                 }
+//             },
+//             { $unwind: '$notifications' },
+//             { $replaceRoot: { newRoot: '$notifications' } },
+//             // Lookup to fetch sender details
+//             {
+//                 $lookup: {
+//                     from: 'users', // Collection name for User
+//                     localField: 'sender',
+//                     foreignField: '_id',
+//                     as: 'senderDetails'
+//                 }
+//             },
+//             {
+//                 $unwind: '$senderDetails' // Unwind to flatten the senderDetails array
+//             },
+//             {
+//                 $project: {
+//                     _id: 1,
+//                     recipient: 1,
+//                     sender: 1,
+//                     'senderDetails.userName': 1,
+//                     'senderDetails.profilePicture': 1,
+//                     link: 1,
+//                     notificationType: 1,
+//                     post: 1,
+//                     comment: 1,
+//                     community: 1,
+//                     message: 1,
+//                     read: 1,
+//                     createdAt: 1,
+//                 }
+//             },
+//             { $skip: skip },
+//             { $limit: Number(limit) }
+//         ]);
+
+//         // Count total notifications for pagination
+//         const totalNotifications = await Notification.countDocuments({ recipient: userId });
+//         const totalPages = Math.ceil(totalNotifications / limit);
+
+//         res.status(200).send({
+//             status: true,
+//             notifications,
+//             totalPages,
+//             currentPage: Number(page),
+//             limit,
+//             message: "Notifications retrieved successfully"
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+//   };
+
+
+
+// const getNotificationsWithOutMarking = async (req, res, next) => {
+//   try {
+//       const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
+//       const { page = 1, limit = 50 } = req.query;
+
+//       // Calculate the number of documents to skip
+//       const skip = (page - 1) * limit;
+
+//       // Use aggregation to sort the notifications in two groups: unread first, then read
+//       const notifications = await Notification.aggregate([
+//           {
+//               $match: {
+//                   recipient: userId
+//               }
+//           },
+//           {
+//               $facet: {
+//                   unread: [
+//                       { $match: { read: false } },
+//                       { $sort: { createdAt: -1 } },
+//                   ],
+//                   read: [
+//                       { $match: { read: true } },
+//                       { $sort: { createdAt: -1 } },
+//                   ]
+//               }
+//           },
+//           {
+//               $project: {
+//                   notifications: {
+//                       $concatArrays: ['$unread', '$read']
+//                   }
+//               }
+//           },
+//           { $unwind: '$notifications' },
+//           { $replaceRoot: { newRoot: '$notifications' } },
+//           { $skip: skip },
+//           { $limit: Number(limit) }
+//       ]);
+
+//       // Count total notifications for pagination
+//       const totalNotifications = await Notification.countDocuments({ recipient: userId });
+//       const totalPages = Math.ceil(totalNotifications / limit);
+
+//       res.status(200).send({
+//           status: true,
+//           notifications,
+//           totalPages,
+//           currentPage: Number(page),
+//           limit,
+//           message: "Notifications retrieved successfully"
+//       });
+//   } catch (error) {
+//       next(error);
+//   }
+// };
 
 
 // const getNotificationsWithOutMarking = async (req, res, next) => {
@@ -136,7 +271,17 @@ const markNotificationAsRead = async (req, res, next) => {
 };
 const markAllNotificationsAsRead = async (req, res, next) => {
     try {
-        const userId = req.tokenPayLoad._id; // Get the logged-in user ID from token
+        const userId = req?.tokenPayLoad?._id; // Get the logged-in user ID from token
+
+
+        console.log("user id ", userId);
+
+        if (!userId) {
+            res.send({
+              status: false,
+              message: "Invalid User !",
+            });
+          }
 
         // Update all unread notifications for the user to mark them as read
         await Notification.updateMany({ recipient: userId, read: false }, { read: true });

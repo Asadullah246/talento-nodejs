@@ -34,6 +34,6 @@ communityRouter.get('/getAdminOrModeratorCommunities', checkToken, getAdminOrMod
 communityRouter.post('/updateCommunity', checkToken, upload.single('fileUploads'), updateCommunity);
 communityRouter.get('/getSingleCommunity', checkToken, updateCommunity);
 
-module.exports = { 
+module.exports = {
     communityRouter
-};
+}; 
