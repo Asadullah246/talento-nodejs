@@ -8,10 +8,12 @@ const connectDB = require('./config/dbConnect');
 require('dotenv').config(); // env file access
 const PORT = process.env.PORT || 5000;
 const http = require('http');
-const socketIO = require('socket.io');
+
 const User = require('./modules/user/user.model');
 const Chat = require('./modules/chat/chat.model');
 // const Chat = require('./modules/chat/chat.model');
+
+const socketIO = require('socket.io');
 
 const server = http.createServer(app); // Create the server
 
@@ -43,6 +45,7 @@ server.listen(PORT, async () => {
         // Notify all clients that the user is online
         const user = await User.findById(userId).select('userName profilePicture');
         if (user) {
+            console.log("user found", user);
           io.emit('userOnline', {
             userId,
             userName: user.userName,
@@ -67,19 +70,21 @@ server.listen(PORT, async () => {
             receiver: receiverId
           });
           await newChat.save(); // Save message to DB
+          console.log("online users", onlineUsers);
 
           const receiverSocketId = onlineUsers.get(receiverId);
+          console.log("reciver socke id", receiverSocketId);
 
           // If the receiver is online, emit the message
           if (receiverSocketId) {
-            io.to(receiverSocketId).emit('receiveMessage', {
+            io.to(receiverSocketId).emit('newMessage', { 
               senderId,
               message,
               createdAt: newChat.createdAt
             });
           }
         } catch (error) {
-          console.log('Error sending message:', error.message);
+          console.log('Error sending message:', error);
         }
       });
 
@@ -103,6 +108,7 @@ server.listen(PORT, async () => {
       });
     });
   } catch (err) {
+    console.log(err);
     console.log(err.message);
   } finally {
     console.log(`server running at http://localhost:${PORT}`);

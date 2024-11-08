@@ -67,6 +67,7 @@ const getChatHistory = async (req, res, next) => {
       const {
         //  userId,
          otherUserId } = req.query;
+
       const userId = req.tokenPayLoad._id;
 
       const chatHistory = await Chat.find({
