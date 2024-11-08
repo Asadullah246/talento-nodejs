@@ -11,6 +11,8 @@ const commentSchema = new mongoose.Schema(
       ref: "Comment",
       default: null,
     },
+
+    replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {
@@ -21,6 +23,6 @@ const commentSchema = new mongoose.Schema(
 
 
 // Create the Comment model
-const Comment = mongoose.model('CommentSchema', commentSchema);
+const Comment = mongoose.model('Comment', commentSchema);
 
 module.exports = Comment;

@@ -1,4 +1,4 @@
-const Comment = require('../comment/comment.model');
+const Comment = require('../commentModule/comment.model'); 
 const Notification = require('../notification/notification.model');
 const Post = require('../post/post.model');
 

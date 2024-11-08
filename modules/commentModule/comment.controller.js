@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Comment = require('./comment.model');
 const Post = require('../post/post.model');
 const Notification = require('../notification/notification.model');
@@ -7,6 +8,7 @@ const createComment = async (req, res, next) => {
     try {
         const { postId, commentContent, parentCommentId } = req.body;
         const userId = req.tokenPayLoad._id;
+        console.log("req body creat comment", req.body);
 
         // Ensure the post exists
         const post = await Post.findById(postId);
@@ -21,6 +23,17 @@ const createComment = async (req, res, next) => {
             post: postId,
             parentComment: parentCommentId || null // If parentCommentId is provided, it's a reply
         });
+
+
+         // If it's a reply, add the reply ID to the parent comment's replies field
+    if (parentCommentId) {
+        const parentComment = await Comment.findById(parentCommentId);
+        if (parentComment) {
+          parentComment.replies.push(comment._id);
+          await parentComment.save();
+        }
+      }
+
 
         // If it's a reply, add a notification for the original comment's author
         if (parentCommentId) {
@@ -156,33 +169,56 @@ console.log("reply data", replies);
     }
 };
 
-const populateRepliesRecursively = async (comments) => {
-    const populatedComments = await Comment.populate(comments, { path: 'replies' });
-    for (const comment of populatedComments) {
-      if (comment.replies && comment.replies.length > 0) {
-        comment.replies = await populateRepliesRecursively(comment.replies);
-      }
-    }
-    return populatedComments;
-  };
-  const getAllCommentsWithReplies = async (req, res, next) => {
+
+const getAllCommentsWithReplies = async (req, res, next) => {
     try {
-      const { specialId, page = 1, limit = 50 } = req.query;
+        const { specialId, page = 1, limit = 50 } = req.query;
 
-      // Fetch top-level comments without replies first
-      let comments = await Comment.find({ post: specialId, parentComment: null })
-        .limit(limit)
-        .skip((page - 1) * limit);
+        // Fetch top-level comments for the specified post
+        let comments = await Comment.find({ post: specialId, parentComment: null })
+            .populate('user', 'userName profilePicture') // Populate user field of top-level comments
+            .limit(Number(limit))
+            .skip((page - 1) * limit);
 
-      // Recursively populate all levels of replies
-      comments = await populateRepliesRecursively(comments);
+        // Recursively populate replies for each comment
+        const populateRepliesRecursively = async (comment) => {
+            comment = await comment.populate({
+                path: 'replies',
+                populate: {
+                    path: 'user',
+                    select: 'userName profilePicture',
+                },
+            });
 
-      res.status(200).json({ status: true, comments });
+            if (comment.replies && comment.replies.length > 0) {
+                for (let i = 0; i < comment.replies.length; i++) {
+                    comment.replies[i] = await populateRepliesRecursively(comment.replies[i]);
+                }
+            }
+
+            return comment;
+        };
+
+        // Populate replies for each top-level comment
+        for (let i = 0; i < comments.length; i++) {
+            comments[i] = await populateRepliesRecursively(comments[i]);
+        }
+
+        // Send the populated comments as a response
+        res.status(200).json({ status: true, comments });
     } catch (error) {
-      console.error('Error fetching comments with replies:', error);
-      next(error);
+        console.error('Error fetching comments with replies:', error); 
+        next(error);
     }
-  };
+};
+
+
+
+
+
+
+
+
 
 
 module.exports = {
