@@ -12,6 +12,7 @@ const {
     searchUsers,
     checkFollow
 } = require('./user.controller');
+const { upload } = require('../../config/multerConfig');
 const userRouter = express.Router();
 
 // writes the user router
@@ -20,8 +21,8 @@ userRouter.post('/userOtpSend', userOtpSend);
 userRouter.post('/userOtpVerify', userOtpVerify);
 userRouter.post('/followUser', checkToken, followUser);
 userRouter.post('/checkFollow', checkToken, checkFollow);
-userRouter.post('/unFollowUser', checkToken, unFollowUser);
-userRouter.post('/updateUser', checkToken, updateUser);
+userRouter.post('/unFollowUser', checkToken, unFollowUser); 
+userRouter.post('/updateUser', checkToken, upload.single('fileUploads'), updateUser);
 userRouter.get('/getAllUsers', checkToken, getAllUsers);
 userRouter.get('/searchUsers', checkToken, searchUsers);
 userRouter.get('/suggestUsers', checkToken, suggestUsers);

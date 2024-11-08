@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema(
             default: 'user',
             required: true
         },
+        bio: { 
+            type: String,
+            required: false
+        },
         gender: {
             type: String,
             required: true

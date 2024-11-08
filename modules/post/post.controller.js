@@ -44,16 +44,17 @@ const getPaginatedPosts = async (req, res, next) => {
 
 const getPostByUserId = async (req, res, next) => {
   try {
-    const { userId } = req.body;
-    if (userId !== req.tokenPayLoad._id.toString()) {
-      res.send({
-        status: false,
+    // const { specialId } = req.query;
+    const userId = req.tokenPayLoad._id;
+    // if (userId !== req.tokenPayLoad._id.toString()) {
+    //   res.send({
+    //     status: false,
 
-        message: "Invalid User !",
-      });
-    }
-
+    //     message: "Invalid User !",
+    //   });
+    // }
     const postDb = await Post.find({ user: userId });
+
     if (!postDb) {
       res.send({
         status: false,
@@ -70,6 +71,8 @@ const getPostByUserId = async (req, res, next) => {
     next(message);
   }
 };
+
+
 const getPostById = async (req, res, next) => {
   try {
     const { specialId, userId } = req.query;
@@ -111,7 +114,7 @@ const getPost= async (req, res, next) => {
   try {
     // const { userId } = req.body;
     const { page = 1, limit = 50, userId } = req.query;
-    console.log("req query", req.query);
+    // console.log("req query", req.query);
     console.log("user", userId,req.tokenPayLoad._id.toString() );
     if (userId !== req.tokenPayLoad._id.toString()) {
       res.send({

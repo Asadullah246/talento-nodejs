@@ -104,7 +104,7 @@ const getTopLevelComments = async (req, res, next) => {
     try {
         const { specialId, page = 1, limit = 50 } = req.query;
         const skip = (page - 1) * limit;
-        console.log("req query", req.query);
+        // console.log("req query", req.query);
 
         const comments = await Comment.find({ post: specialId, parentComment: null })
             .sort({ createdAt: -1 })
@@ -182,7 +182,7 @@ const populateRepliesRecursively = async (comments) => {
       console.error('Error fetching comments with replies:', error);
       next(error);
     }
-  }; 
+  };
 
 
 module.exports = {

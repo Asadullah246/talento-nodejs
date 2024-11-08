@@ -253,7 +253,9 @@ const unFollowUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const userId = req.tokenPayLoad._id; // Get the current user's ID from token payload
-    const { userName, email, password } = req.body;
+    const { userName, password , fileType} = req.body; 
+
+    console.log("redbody", req.body);
 
     // Find the user by ID
     const user = await User.findById(userId);
@@ -263,15 +265,15 @@ const updateUser = async (req, res, next) => {
     }
 
     // Check if email is being updated and if it's unique
-    if (email && email !== user.email) {
-      const emailExists = await User.findOne({ email });
-      if (emailExists) {
-        return res
-          .status(400)
-          .send({ status: false, message: "Email already in use" });
-      }
-      user.email = email; // Update the email
-    }
+    // if (email && email !== user.email) {
+    //   const emailExists = await User.findOne({ email });
+    //   if (emailExists) {
+    //     return res
+    //       .status(400)
+    //       .send({ status: false, message: "Email already in use" });
+    //   }
+    //   user.email = email; // Update the email
+    // }
 
     // Update userName if provided
     if (userName) {
@@ -289,6 +291,24 @@ const updateUser = async (req, res, next) => {
 
       user.password = await bcrypt.hash(password, 10); // Hash the new password
     }
+
+    let profilePic = "";
+    let imageUrl = "";
+    let videoUrl = "";
+
+    console.log("red fiel", req?.file);
+
+    if (req.file) {
+      const fileUrl = req.file.location;
+      if (fileType === "image") {
+        profilePic = fileUrl;
+      }
+      //  else if (fileType === "video") {
+      //   videoUrl = fileUrl;
+      // }
+    }
+
+    user.profilePicture = profilePic;
 
     // Save the updated user
     await user.save();
@@ -326,7 +346,7 @@ const getAllUsers = async (req, res, next) => {
   try {
     // const { userId } = req.body;
     const { page = 1, limit = 50, userId } = req.query;
-    console.log("req query", req.query);
+    // console.log("req query", req.query);
     if (userId !== req.tokenPayLoad._id.toString()) {
       res.send({
         status: false,
