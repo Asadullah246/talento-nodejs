@@ -170,7 +170,7 @@ const getPostsById = async (req, res, next) => {
 
 
     // get in simple way
-    
+
     // const postDb = await Post.find({ user: specialId });
 
     // Check if posts exist
@@ -193,12 +193,12 @@ const getPostsById = async (req, res, next) => {
 };
 
 const getPost = async (req, res, next) => {
-  console.log("calling this");
+  // console.log("calling this");
   try {
     // const { userId } = req.body;
     const { page = 1, limit = 50, userId } = req.query;
     // console.log("req query", req.query);
-    console.log("user", userId, req.tokenPayLoad._id.toString());
+    // console.log("user", userId, req.tokenPayLoad._id.toString());
     if (userId !== req.tokenPayLoad._id.toString()) {
       res.send({
         status: false,

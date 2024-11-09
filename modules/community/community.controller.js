@@ -146,7 +146,7 @@ const inviteUserToCommunity = async (req, res, next) => {
 
         // Find the community by ID
         const community = await Community.findById(communityId);
-        console.log("community", community);
+        // console.log("community", community);
 
         if (!community) {
             return res.status(404).send({ status: false, message: 'Community not found' });
@@ -231,6 +231,45 @@ const acceptCommunityInvitation = async (req, res, next) => {
         });
     } catch (error) {
         console.error('Error accepting community invitation:', error);
+        next(error);
+    }
+};
+const leaveCommunity = async (req, res, next) => {
+    try {
+        const { communityId } = req.body; // Community ID to accept invitation from
+        const userId = req.tokenPayLoad._id; // The ID of the user accepting the invitation
+
+        // Find the community by ID
+        const community = await Community.findById(communityId);
+
+        if (!community) {
+            return res.status(404).send({ status: false, message: 'Community not found' });
+        }
+
+        // Check if the user was invited to the community
+        if (!community.communityPeople.includes(userId)) {
+            return res
+                .status(400)
+                .send({ status: false, message: 'You are not a member of this community' });
+        }
+
+        // Move the user from invitedPeople to communityPeople
+        // Remove the user from invitedPeople array
+        community.communityPeople = community.communityPeople.filter(
+            (id) => id.toString() !== userId.toString()
+        );
+        // community.invitedPeople = community.invitedPeople.filter((id) => id.toString() !== userId);
+
+        // Save the community with the updated lists
+        await community.save();
+
+        res.status(200).send({
+            status: true,
+            message: 'You have successfully left the community',
+            community
+        });
+    } catch (error) {
+        console.error('Error leaving community:', error);
         next(error);
     }
 };
@@ -467,4 +506,5 @@ module.exports = {
     getSingleCommunity,
     forYouCommunities,
     updateCommunity,
+    leaveCommunity
 };

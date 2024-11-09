@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
             default: 'user',
             required: true
         },
-        bio: { 
+        bio: {
             type: String,
             required: false
         },
@@ -42,6 +42,9 @@ const userSchema = new mongoose.Schema(
             default: false
         },
         profilePicture: {
+            type: String
+        },
+        coverPicture: {
             type: String
         },
         followers: [

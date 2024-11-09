@@ -11,7 +11,8 @@ const {
     getUnjoinedUsers,
     searchUsers,
     checkFollow,
-    getUserById
+    getUserById,
+    followingAndFollowers
 } = require('./user.controller');
 const { upload } = require('../../config/multerConfig');
 const userRouter = express.Router();
@@ -28,6 +29,7 @@ userRouter.get('/getAllUsers', checkToken, getAllUsers);
 userRouter.get('/getUserById', checkToken, getUserById);
 userRouter.get('/searchUsers', checkToken, searchUsers);
 userRouter.get('/suggestUsers', checkToken, suggestUsers);
+userRouter.get('/followingAndFollowers', checkToken, followingAndFollowers);
 userRouter.get('/getUnjoinedUsers/:communityId', checkToken, getUnjoinedUsers);
 
 module.exports = {

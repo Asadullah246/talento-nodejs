@@ -283,7 +283,7 @@ const updateUser = async (req, res, next) => {
       user.userName = userName;
     }
     if (bio) {
-      user.bio = bio; 
+      user.bio = bio;
     }
 
     // Update password if provided and hash the new password
@@ -560,6 +560,128 @@ const suggestUsers = async (req, res, next) => {
     next(error);
   }
 };
+// const followingAndFollowers = async (req, res, next) => {
+//   try {
+//     const userId = req.tokenPayLoad._id; // Get the current logged-in user ID
+
+//     // Find the current user and populate the following and followers arrays
+//     const currentUser = await User.findById(userId)
+//       .select("following followers") // Select only following and followers fields
+//       .populate({
+//         path: "following",
+//         select: "userName profilePicture bio"
+//       })
+//       .populate({
+//         path: "followers",
+//         select: "userName profilePicture bio"
+//       });
+
+//     if (!currentUser) {
+//       return res.status(404).send({ status: false, message: "User not found" });
+//     }
+
+//     // Prepare arrays for following and followers with selected fields
+//     const following = currentUser.following.map(user => ({
+//       userId: user._id,
+//       userName: user.userName,
+//       profilePicture: user.profilePicture
+//     }));
+
+//     const followers = currentUser.followers.map(user => ({
+//       userId: user._id,
+//       userName: user.userName,
+//       profilePicture: user.profilePicture
+//     }));
+
+//     res.status(200).send({
+//       status: true,
+//       following,
+//       followers,
+//     });
+//   } catch (error) {
+//     console.error("Error suggesting users:", error);
+//     next(error);
+//   }
+// };
+
+const followingAndFollowers = async (req, res, next) => {
+  try {
+    // const userId = req.tokenPayLoad._id; // Get the current logged-in user ID
+    const currentUserId = req.tokenPayLoad._id; // Get the current logged-in user ID
+    // const {specialId}=req.query;
+    const { specialId: userId } = req.query;
+
+
+    // Find the current user and populate the following and followers arrays
+    const currentUser = await User.findById(userId)
+      .select("following followers") // Select only following and followers fields
+      .populate({
+        path: "following",
+        select: "userName profilePicture bio"
+      })
+      .populate({
+        path: "followers",
+        select: "userName profilePicture bio"
+      });
+    const currentUserData = await User.findById(currentUserId);
+      // .select("following followers") // Select only following and followers fields
+      // .populate({
+      //   path: "following",
+      //   select: "userName profilePicture bio"
+      // })
+      // .populate({
+      //   path: "followers",
+      //   select: "userName profilePicture bio"
+      // });
+
+    if (!currentUser) {
+      return res.status(404).send({ status: false, message: "User not found" });
+    }
+
+    // Prepare arrays for following and followers with selected fields
+    const following = currentUser.following.map(user => ({
+      userId: user._id,
+      bio:user?.bio,
+      userName: user.userName,
+      profilePicture: user.profilePicture,
+      followStatus: currentUserData.following.some(follower => follower.equals(user._id))
+    }));
+
+    const followers = currentUser.followers.map(user => ({
+      userId: user._id,
+      bio:user?.bio,
+      userName: user.userName,
+      profilePicture: user.profilePicture,
+      followStatus: currentUserData.following.some(following => following.equals(user._id)) 
+    }));
+    // const following = currentUser.following.map(user => ({
+    //   userId: user._id,
+    //   bio:user?.bio,
+    //   userName: user.userName,
+    //   profilePicture: user.profilePicture,
+    //   followMe: currentUserData.followers.some(follower => follower.equals(user._id))
+    // }));
+
+    // const followers = currentUser.followers.map(user => ({
+    //   userId: user._id,
+    //   bio:user?.bio,
+    //   userName: user.userName,
+    //   profilePicture: user.profilePicture,
+    //   followHim: currentUserData.following.some(following => following.equals(user._id))
+    // }));
+
+    res.status(200).send({
+      status: true,
+      following,
+      followers,
+    });
+  } catch (error) {
+    console.error("Error suggesting users:", error);
+    next(error);
+  }
+};
+
+
 
 module.exports = {
   userOtpSend,
@@ -572,5 +694,6 @@ module.exports = {
   getUnjoinedUsers,
   searchUsers,
   checkFollow,
-  getUserById
+  getUserById,
+  followingAndFollowers
 };
