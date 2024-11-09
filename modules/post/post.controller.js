@@ -1,3 +1,4 @@
+const User = require("../user/user.model");
 const Post = require("./post.model");
 
 // pagenation based post retrieved home page
@@ -192,63 +193,142 @@ const getPostsById = async (req, res, next) => {
   }
 };
 
-const getPost = async (req, res, next) => {
-  // console.log("calling this");
-  try {
-    // const { userId } = req.body;
-    const { page = 1, limit = 50, userId } = req.query;
-    // console.log("req query", req.query);
-    // console.log("user", userId, req.tokenPayLoad._id.toString());
-    if (userId !== req.tokenPayLoad._id.toString()) {
-      res.send({
-        status: false,
 
-        message: "Invalid User !",
+// const getPost = async (req, res, next) => {
+//   try {
+//     const { page = 1, limit = 50, userId } = req.query;
+//     // console.log("req query", req.query);
+
+//     // Validate if the user ID in the request matches the authenticated user's ID
+//     if (userId !== req.tokenPayLoad._id.toString()) {
+//       return res.status(403).send({
+//         status: false,
+//         message: "Invalid User!",
+//       });
+//     }
+
+//     // Find the user and retrieve their postIgnoreList
+//     const user = await User.findById(userId).select('postIgnoreList');
+//     if (!user) {
+//       return res.status(404).send({
+//         status: false,
+//         message: "User not found",
+//       });
+//     }
+//     // console.log("user is", user);
+//     // Calculate pagination
+//     const skip = (page - 1) * limit;
+
+//     // Fetch posts excluding those in the postIgnoreList and sorting by latest first
+//     const postDb = await Post.find({ _id: { $nin: user.postIgnoreList } })
+//       .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+//       .skip(skip)
+//       .limit(Number(limit))
+//       .populate("user", "userName profilePicture");
+
+//       // console.log("posts", postDb);
+//     if (!postDb || postDb.length === 0) {
+//       return res.send({
+//         status: false,
+//         message: "No posts found",
+//       });
+//     }
+
+//     // Total posts count excluding ignored posts
+//     const totalPosts = await Post.countDocuments({ _id: { $nin: user.postIgnoreList } });
+//     const totalPages = Math.ceil(totalPosts / limit);
+
+//     res.send({
+//       status: true,
+//       posts: postDb,
+//       totalPages,
+//       currentPage: Number(page),
+//       message: "Posts retrieved successfully",
+//     });
+
+//   } catch (error) {
+//     next(error.message);
+//   }
+// };
+
+
+const getPost = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 50, userId } = req.query;
+
+    // Validate if the user ID in the request matches the authenticated user's ID
+    if (userId !== req.tokenPayLoad._id.toString()) {
+      return res.status(403).send({
+        status: false,
+        message: "Invalid User!",
       });
     }
 
-    // Calculate the number of documents to skip
+    // Find the user and retrieve their postIgnoreList
+    const user = await User.findById(userId).select('postIgnoreList');
+    if (!user) {
+      return res.status(404).send({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+    // Calculate pagination
     const skip = (page - 1) * limit;
 
-    const postDb = await Post.find({})
+    // Fetch posts excluding those in the postIgnoreList and sorting by latest first
+    const posts = await Post.find({ _id: { $nin: user.postIgnoreList } })
+      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
       .skip(skip)
       .limit(Number(limit))
       .populate("user", "userName profilePicture");
 
-    if (!postDb || postDb.length === 0) {
+    if (!posts || posts.length === 0) {
       return res.send({
         status: false,
-        message: "Not found any post",
+        message: "No posts found",
       });
     }
-    const totalPosts = await Post.countDocuments({});
+
+    // Add user-specific data (liked and shared status) for each post
+    const postsWithUserInfo = posts.map(post => {
+      // Check if the user has liked the post
+      const userLiked = post.likes.includes(userId) ? 1 : 0;
+
+      // Check if the user has shared the post
+      const userShared = post.shared.includes(userId) ? 1 : 0;
+
+      return {
+        ...post.toObject(), // Convert Mongoose document to plain object
+        userLiked,
+        userShared,
+      };
+    });
+
+    // Total posts count excluding ignored posts
+    const totalPosts = await Post.countDocuments({ _id: { $nin: user.postIgnoreList } });
     const totalPages = Math.ceil(totalPosts / limit);
 
     res.send({
       status: true,
-      posts: postDb,
+      posts: postsWithUserInfo,
       totalPages,
       currentPage: Number(page),
-      message: "Post retrieved successfully",
+      message: "Posts retrieved successfully",
     });
 
-    // const postDb = await Post.find({});
-    // if (!postDb) {
-    //   res.send({
-    //     status: false,
-    //     message: "Not found any post",
-    //   });
-    // } else {
-    //   res.send({
-    //     status: true,
-    //     posts: postDb,
-    //     message: "Post retrieved success",
-    //   });
-    // }
-  } catch ({ message }) {
-    next(message);
+  } catch (error) {
+    next(error.message);
   }
 };
+
+
+
+
+
+
+
+
 
 const createPost = async (req, res, next) => {
   try {
@@ -342,6 +422,17 @@ const sharePost = async (req, res, next) => {
         .send({ status: false, message: "Original post not found" });
     }
 
+
+      // Check if the user has already shared the post
+      if (originalPost.shared.includes(userId)) {
+        return res.status(400).send({
+          status: false,
+          message: "You have already shared this post",
+        });
+      }
+
+
+
     // Create a new post, indicating it's a shared post
     const sharedPost = await Post.create({
       user: userId,
@@ -351,6 +442,12 @@ const sharePost = async (req, res, next) => {
       videoUrl: originalPost.videoUrl,
     });
 
+     // Update the original post's "shared" field with the user ID
+     await Post.findByIdAndUpdate(postId, {
+      $addToSet: { shared: userId }, // Add userId to shared array, only if not already present
+    });
+
+
     res.status(201).send({
       status: true,
       post: sharedPost,
@@ -359,8 +456,7 @@ const sharePost = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
+}; 
 module.exports = {
   deletePostByUserIdPostId,
   createPost,

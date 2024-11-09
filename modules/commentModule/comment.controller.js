@@ -48,7 +48,7 @@ const createComment = async (req, res, next) => {
           0,
           20
         )}..."`,
-        comment: parentCommentId, 
+        comment: parentCommentId,
       });
     } else {
       // Otherwise, it's a new comment on the post, so notify the post's author
@@ -237,6 +237,31 @@ const getAllCommentsWithReplies = async (req, res, next) => {
   }
 };
 
+const getCommentCount = async (req, res, next) => {
+  try {
+    const { specialId:postId } = req.query;
+    console.log("postId", postId); 
+
+    // Ensure the post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).send({ status: false, message: "Post not found" });
+    }
+
+    // Count all comments associated with this post
+    const totalComments = await Comment.countDocuments({ post: postId });
+
+    res.status(200).send({
+      status: true,
+      totalComments,
+      message: "Total comments count retrieved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 module.exports = {
   createComment,
   updateComment,
@@ -244,4 +269,5 @@ module.exports = {
   getTopLevelComments,
   getReplies,
   getAllCommentsWithReplies,
+  getCommentCount
 };

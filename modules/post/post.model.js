@@ -33,7 +33,13 @@ const postSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'User' // Reference to Comment model for nested replies
             }
-        ]
+        ],
+        shared: [
+            {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'User' // Reference to the User model
+            }
+          ]
     },
     { timestamps: true }
 );

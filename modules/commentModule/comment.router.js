@@ -6,7 +6,8 @@ const {
     deleteComment,
     getTopLevelComments,
     getReplies,
-    getAllCommentsWithReplies
+    getAllCommentsWithReplies,
+    getCommentCount
 } = require('./comment.controller');
 
 const commentRouter = express.Router();
@@ -26,7 +27,8 @@ commentRouter.get('/topLevelComments', checkToken, getTopLevelComments);
 // Get replies for a specific comment with pagination
 commentRouter.get('/replies', checkToken, getReplies);
 commentRouter.get('/getAllComments', checkToken, getAllCommentsWithReplies);
+commentRouter.get('/getCommentCount', checkToken, getCommentCount ); 
 
-module.exports = { 
+module.exports = {
     commentRouter
 };
