@@ -80,11 +80,35 @@ const changePassword = async (req, res, next) => {
 
 const signUp = async (req, res, next) => {
 
+    // console.log("calling create acccount");
+
     try {
-        const { email, password, role, userName, gender, profilePicture,uid, isVerified } = req.body;
+        const { email, password, role, userName, gender,uid, isVerified } = req.body;
 
 
         const hashPassword = await bcrypt.hash(password, 10);
+
+
+        let profilePic = "";
+
+
+        // console.log("req body", req.body);
+        console.log("red fiel", req?.file);
+        if (req?.file) {
+          const fileUrl = req?.file?.location;
+          profilePic = fileUrl;
+        //   if (fileType === "image") {
+        //     profilePic = fileUrl;
+        //   }
+        //   else {
+        //     res.send({
+        //         status: false,
+        //         message: "Unaccepted file !",
+        //       });
+
+        //   }
+        }
+
         // console.log(hashPassword);
 
         const user = await User.create({
@@ -93,7 +117,8 @@ const signUp = async (req, res, next) => {
             role,
             userName,
             gender,
-            profilePicture,uid, isVerified
+            profilePicture: profilePic,
+            uid, isVerified
         });
         console.log(user);
 
