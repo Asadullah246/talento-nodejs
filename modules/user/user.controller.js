@@ -465,11 +465,18 @@ const searchUsers = async (req, res, next) => {
   try {
     const { query } = req.query;
     console.log("query is ", query);
+    const userData=req.tokenPayLoad._id;
 
     // Search for users by name or other criteria
+    // const users = await User.find({
+    //   userName: { $regex: query, $options: "i" },
+    // }).select("userName profilePicture");
+
     const users = await User.find({
       userName: { $regex: query, $options: "i" },
+      _id: { $ne: userData },  // Exclude the current user by ID
     }).select("userName profilePicture");
+    
 
     res.status(200).send({ status: true, users });
   } catch (error) {

@@ -59,6 +59,8 @@ server.listen(PORT, async () => {
       // Handle sending a chat message
       socket.on('sendMessage', async ({ senderId, receiverId, message }) => {
         try {
+
+          console.log("sen", senderId, "rec", receiverId, "me", message);
           if (!senderId || !receiverId || !message) {
             console.error('Invalid message data');
             return;
@@ -72,7 +74,7 @@ server.listen(PORT, async () => {
           await newChat.save(); // Save message to DB
         //   console.log("online users", onlineUsers);
 
-          const receiverSocketId = onlineUsers.get(receiverId);
+          const receiverSocketId = onlineUsers.get(receiverId); 
         //   console.log("reciver socke id", receiverSocketId);
 
           // If the receiver is online, emit the message

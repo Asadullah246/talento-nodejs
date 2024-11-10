@@ -448,7 +448,7 @@ const sharePost = async (req, res, next) => {
     });
 
 
-    res.status(201).send({
+    res.status(200).send({ 
       status: true,
       post: sharedPost,
       message: "Post shared successfully",
@@ -456,7 +456,7 @@ const sharePost = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}; 
+};
 module.exports = {
   deletePostByUserIdPostId,
   createPost,

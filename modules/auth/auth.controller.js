@@ -11,6 +11,8 @@ const signIn = async (req, res, next) => {
         const { email, password } = req.body;
         const dbUser = await User.findOne({ email });
         console.log(dbUser);
+        console.log("rebody ", req.body);
+        console.log("dbuse ", dbUser);
 
         if (dbUser) {
             const isValidPassword = await bcrypt.compare(password, dbUser.password);
@@ -30,21 +32,23 @@ const signIn = async (req, res, next) => {
                 res.set('Authorization', token);
                 //res.set('authToken', token);
                 res.json({
-                    status: true,
+                    status: true, 
                     user: dbUser,
                     message: 'User Log in success'
                 });
             } else {
+                console.log("pass not matched");
                 res.send({ status: false, message: 'Password Invalid !' }).status(401);
             }
         } else {
+            console.log("user nto found");
             res.send({
                 status: false,
                 message: 'user not found ! '
             }).status(401);
         }
     } catch (err) {
-        // console.log(err.message);
+        console.log(err?.message);
         next(err.message);
     }
 };
