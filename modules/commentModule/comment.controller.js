@@ -240,7 +240,7 @@ const getAllCommentsWithReplies = async (req, res, next) => {
 const getCommentCount = async (req, res, next) => {
   try {
     const { specialId:postId } = req.query;
-    console.log("postId", postId); 
+    // console.log("postId", postId); 
 
     // Ensure the post exists
     const post = await Post.findById(postId);

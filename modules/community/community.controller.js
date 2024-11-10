@@ -200,6 +200,7 @@ const acceptCommunityInvitation = async (req, res, next) => {
         const userId = req.tokenPayLoad._id; // The ID of the user accepting the invitation
 
         // Find the community by ID
+        console.log("com id", communityId);
         const community = await Community.findById(communityId);
 
         if (!community) {
@@ -207,11 +208,11 @@ const acceptCommunityInvitation = async (req, res, next) => {
         }
 
         // Check if the user was invited to the community
-        if (!community.invitedPeople.includes(userId)) {
-            return res
-                .status(400)
-                .send({ status: false, message: 'You have not been invited to this community' });
-        }
+        // if (!community.invitedPeople.includes(userId)) {
+        //     return res
+        //         .status(400)
+        //         .send({ status: false, message: 'You have not been invited to this community' });
+        // }
 
         // Move the user from invitedPeople to communityPeople
         // Remove the user from invitedPeople array
@@ -384,29 +385,106 @@ const forYouCommunities = async (req, res, next) => {
 
 
 
+// const getSingleCommunity = async (req, res, next) => {
+//     try {
+//         const userId = req.tokenPayLoad._id; // Extract user ID from token payload
+// const {specialId} =req.query ;
+//         // Find communities where the user is in communityPeople array
+//         const communities = await Community.findOne({ _id: specialId });
+
+//         if (!communities) {
+//             return res.status(404).send({
+//                 status: false,
+//                 message: 'You are not part of any community'
+//             });
+//         }
+
+//         res.status(200).send({
+//             status: true,
+//             communities
+//         });
+//     } catch (error) {
+//         console.error('Error retrieving communities you belong to:', error);
+//         next(error);
+//     }
+// };
+
+// const getSingleCommunity = async (req, res, next) => {
+//     try {
+//         const userId = req.tokenPayLoad._id; // Extract user ID from token payload
+//         const { specialId } = req.query;
+
+//         // Find the community by ID and populate admin, moderators, and people data
+//         const community = await Community.findOne({ _id: specialId })
+//             .populate('communityAdmin', 'name picture bio _id')
+//             .populate('communityModerator', 'name picture bio _id')
+//             .populate('communityPeople', 'name picture bio _id');
+
+//         if (!community) {
+//             return res.status(404).send({
+//                 status: false,
+//                 message: 'You are not part of any community'
+//             });
+//         }
+
+//         res.status(200).send({
+//             status: true,
+//             community
+//         });
+//     } catch (error) {
+//         console.error('Error retrieving community:', error);
+//         next(error);
+//     }
+// };
+
 const getSingleCommunity = async (req, res, next) => {
     try {
         const userId = req.tokenPayLoad._id; // Extract user ID from token payload
-const {specialId} =req.query ;
-        // Find communities where the user is in communityPeople array
-        const communities = await Community.findOne({ _id: specialId });
+        const { specialId } = req.query;
 
-        // if (!communities || communities.length === 0) {
-        //     return res.status(404).send({
-        //         status: false,
-        //         message: 'You are not part of any community'
-        //     });
-        // }
+        // Find the community and populate the related fields
+        const community = await Community.findOne({ _id: specialId })
+            .populate('communityAdmin', '_id userName profilePicture bio')
+            .populate('communityModerator', '_id userName profilePicture bio')
+            .populate('communityPeople', '_id userName profilePicture bio');
+
+        if (!community) {
+            return res.status(404).send({
+                status: false,
+                message: 'Community not found'
+            });
+        }
+
+        // Combine the populated data into a single member list
+        // const memberList = [
+        //     ...community.communityAdmin,
+        //     ...community.communityModerator,
+        //     ...community.communityPeople
+        // ];
+
+        const memberList = [
+            ...community.communityAdmin.map(member => ({ ...member.toObject(), role: 'admin' })),
+            ...community.communityModerator.map(member => ({ ...member.toObject(), role: 'moderator' })),
+            ...community.communityPeople.map(member => ({ ...member.toObject(), role: 'people' })),
+        ];
+
+        console.log("ommunity", community);
+        console.log("memberList", memberList);
 
         res.status(200).send({
             status: true,
-            communities
+            community,
+            memberList
         });
     } catch (error) {
-        console.error('Error retrieving communities you belong to:', error);
+        console.error('Error retrieving community data:', error);
         next(error);
     }
 };
+
+
+
+
 
 const getAdminOrModeratorCommunities = async (req, res, next) => {
     try {
