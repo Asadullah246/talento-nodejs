@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: false
         },
+        address: {
+            type: String,
+            required: false
+        },
+        country: {
+            type: String,
+            required: false
+        },
         gender: {
             type: String,
             required: true
@@ -67,7 +75,7 @@ const userSchema = new mongoose.Schema(
             }
         ]
     },
-    { timestamps: true } 
+    { timestamps: true }
 );
 
 const User = mongoose.model('User', userSchema);

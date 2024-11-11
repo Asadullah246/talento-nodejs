@@ -50,7 +50,7 @@ const Community = require('./community.model');
 
 const addModerator = async (req, res, next) => {
     try {
-        const { communityId, userIdToPromote } = req.body; // Community ID and user to promote
+        const { communityId, userIdToAction } = req.body; // Community ID and user to promote
         const userId = req.tokenPayLoad._id; // The ID of the user who is requesting to add a moderator
 
         // Find the community by ID
@@ -68,19 +68,19 @@ const addModerator = async (req, res, next) => {
         }
 
         // Ensure the user to promote is part of the community
-        if (!community.communityPeople.includes(userIdToPromote)) {
+        if (!community.communityPeople.includes(userIdToAction)) {
             return res
                 .status(400)
                 .send({ status: false, message: 'User must be part of the community' });
         }
 
         // Check if the user is already a moderator
-        if (community.communityModerator.includes(userIdToPromote)) {
+        if (community.communityModerator.includes(userIdToAction)) {
             return res.status(400).send({ status: false, message: 'User is already a moderator' });
         }
 
         // Add the user to the communityModerator array
-        community.communityModerator.push(userIdToPromote);
+        community.communityModerator.push(userIdToAction);
 
         // Save the community with the updated moderators list
         await community.save();
@@ -98,7 +98,7 @@ const addModerator = async (req, res, next) => {
 
 const removeModerator = async (req, res, next) => {
     try {
-        const { communityId, userIdToRemove } = req.body; // Community ID and user to remove from moderator role
+        const { communityId, userIdToAction } = req.body; // Community ID and user to remove from moderator role
         const userId = req.tokenPayLoad._id; // The ID of the user who is requesting to remove a moderator
 
         // Find the community by ID
@@ -116,13 +116,13 @@ const removeModerator = async (req, res, next) => {
         }
 
         // Check if the user is a moderator
-        if (!community.communityModerator.includes(userIdToRemove)) {
+        if (!community.communityModerator.includes(userIdToAction)) {
             return res.status(400).send({ status: false, message: 'User is not a moderator' });
         }
 
         // Remove the user from the communityModerator array
         community.communityModerator = community.communityModerator.filter(
-            (id) => !id.equals(userIdToRemove)
+            (id) => !id.equals(userIdToAction)
         );
 
         // Save the community with the updated moderators list
@@ -259,6 +259,12 @@ const leaveCommunity = async (req, res, next) => {
         community.communityPeople = community.communityPeople.filter(
             (id) => id.toString() !== userId.toString()
         );
+        community.communityModerator = community.communityModerator.filter(
+            (id) => id.toString() !== userId.toString()
+        );
+        community.communityAdmin = community.communityAdmin.filter(
+            (id) => id.toString() !== userId.toString()
+        );
         // community.invitedPeople = community.invitedPeople.filter((id) => id.toString() !== userId);
 
         // Save the community with the updated lists
@@ -382,57 +388,122 @@ const forYouCommunities = async (req, res, next) => {
     }
 };
 
+const deleteCommunity = async (req, res, next) => {
+    try {
+        const { communityId } = req.body; // Community ID from request
+        const userId = req.tokenPayLoad._id;
 
+        // Find the community by ID
+        const community = await Community.findById(communityId);
 
+        if (!community) {
+            return res.status(404).send({
+                status: false,
+                message: 'Community not found'
+            });
+        }
 
-// const getSingleCommunity = async (req, res, next) => {
-//     try {
-//         const userId = req.tokenPayLoad._id; // Extract user ID from token payload
-// const {specialId} =req.query ;
-//         // Find communities where the user is in communityPeople array
-//         const communities = await Community.findOne({ _id: specialId });
+          // Ensure the user is an admin of the community
+          if (!community.communityAdmin.includes(userId)) {
+            return res
+                .status(403)
+                .send({ status: false, message: 'Only admins can delete community' });
+        }
 
-//         if (!communities) {
-//             return res.status(404).send({
-//                 status: false,
-//                 message: 'You are not part of any community'
-//             });
-//         }
+        // Delete the community
+        await Community.findByIdAndDelete(communityId);
 
-//         res.status(200).send({
-//             status: true,
-//             communities
-//         });
-//     } catch (error) {
-//         console.error('Error retrieving communities you belong to:', error);
-//         next(error);
-//     }
-// };
+        res.status(200).send({
+            status: true,
+            message: 'Community has been successfully deleted'
+        });
+    } catch (error) {
+        console.error('Error deleting community:', error);
+        next(error);
+    }
+};
+
+const removePersonFromCommunity = async (req, res, next) => {
+    try {
+        const { communityId, userIdToAction } = req.body; // Community ID and user ID to remove
+        const userId = req.tokenPayLoad._id;
+
+        // Find the community by ID
+        const community = await Community.findById(communityId);
+
+        if (!community) {
+            return res.status(404).send({
+                status: false,
+                message: 'Community not found'
+            });
+        }
+
+        // Check if the user is part of the communityPeople array
+        if (!community.communityPeople.includes(userIdToAction)) {
+            return res.status(400).send({
+                status: false,
+                message: 'User is not a member of this community'
+            });
+        }
+
+        // Remove the user from the communityPeople array
+        community.communityPeople = community.communityPeople.filter(
+            (id) => id.toString() !== userIdToAction.toString()
+        );
+
+        community.communityModerator = community.communityModerator.filter(
+            (id) => id.toString() !== userIdToAction.toString()
+        );
+
+        // Save the community with the updated communityPeople list
+        await community.save();
+
+        res.status(200).send({
+            status: true,
+            message: 'User has been successfully removed from the community',
+            community
+        });
+    } catch (error) {
+        console.error('Error removing user from community:', error);
+        next(error);
+    }
+};
+
 
 // const getSingleCommunity = async (req, res, next) => {
 //     try {
 //         const userId = req.tokenPayLoad._id; // Extract user ID from token payload
 //         const { specialId } = req.query;
 
-//         // Find the community by ID and populate admin, moderators, and people data
+//         // Find the community and populate the related fields
 //         const community = await Community.findOne({ _id: specialId })
-//             .populate('communityAdmin', 'name picture bio _id')
-//             .populate('communityModerator', 'name picture bio _id')
-//             .populate('communityPeople', 'name picture bio _id');
+//             .populate('communityAdmin', '_id userName profilePicture bio')
+//             .populate('communityModerator', '_id userName profilePicture bio')
+//             .populate('communityPeople', '_id userName profilePicture bio');
 
 //         if (!community) {
 //             return res.status(404).send({
 //                 status: false,
-//                 message: 'You are not part of any community'
+//                 message: 'Community not found'
 //             });
 //         }
 
+//         const memberList = [
+//             ...community.communityAdmin.map(member => ({ ...member.toObject(), role: 'admin' })),
+//             ...community.communityModerator.map(member => ({ ...member.toObject(), role: 'moderator' })),
+//             ...community.communityPeople.map(member => ({ ...member.toObject(), role: 'people' })),
+//         ];
+
+//         console.log("ommunity", community);
+//         console.log("memberList", memberList);
+
 //         res.status(200).send({
 //             status: true,
-//             community
+//             community,
+//             memberList
 //         });
 //     } catch (error) {
-//         console.error('Error retrieving community:', error);
+//         console.error('Error retrieving community data:', error);
 //         next(error);
 //     }
 // };
@@ -455,22 +526,30 @@ const getSingleCommunity = async (req, res, next) => {
             });
         }
 
-        // Combine the populated data into a single member list
-        // const memberList = [
-        //     ...community.communityAdmin,
-        //     ...community.communityModerator,
-        //     ...community.communityPeople
-        // ];
+        // Create a Set to store unique user IDs for admin and moderator
+        const uniqueUserIds = new Set();
 
-        const memberList = [
-            ...community.communityAdmin.map(member => ({ ...member.toObject(), role: 'admin' })),
-            ...community.communityModerator.map(member => ({ ...member.toObject(), role: 'moderator' })),
-            ...community.communityPeople.map(member => ({ ...member.toObject(), role: 'people' })),
-        ];
+        // Add admins to the member list and store their IDs
+        const adminList = community.communityAdmin.map(member => {
+            uniqueUserIds.add(member._id.toString());
+            return { ...member.toObject(), role: 'admin' };
+        });
 
-        console.log("ommunity", community);
-        console.log("memberList", memberList);
+        // Add moderators to the member list and store their IDs
+        const moderatorList = community.communityModerator
+            .filter(member => !uniqueUserIds.has(member._id.toString())) // Exclude duplicates
+            .map(member => {
+                uniqueUserIds.add(member._id.toString());
+                return { ...member.toObject(), role: 'moderator' };
+            });
 
+        // Add people who are neither admin nor moderator
+        const peopleList = community.communityPeople
+            .filter(member => !uniqueUserIds.has(member._id.toString())) // Exclude duplicates
+            .map(member => ({ ...member.toObject(), role: 'people' }));
+
+        // Combine all members into a single list
+        const memberList = [...adminList, ...moderatorList, ...peopleList];
         res.status(200).send({
             status: true,
             community,
@@ -481,6 +560,8 @@ const getSingleCommunity = async (req, res, next) => {
         next(error);
     }
 };
+
+
 
 
 
@@ -584,5 +665,7 @@ module.exports = {
     getSingleCommunity,
     forYouCommunities,
     updateCommunity,
-    leaveCommunity
+    leaveCommunity,
+    deleteCommunity,
+    removePersonFromCommunity
 };

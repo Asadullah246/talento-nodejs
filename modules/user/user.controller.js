@@ -256,7 +256,7 @@ const unFollowUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const userId = req.tokenPayLoad._id; // Get the current user's ID from token payload
-    const { userName, bio, password , fileType} = req.body;
+    const { userName, bio, password , fileType, address , country} = req.body;
 
     console.log("redbody", req.body);
 
@@ -284,6 +284,12 @@ const updateUser = async (req, res, next) => {
     }
     if (bio) {
       user.bio = bio;
+    }
+    if (address) {
+      user.address = address;
+    }
+    if (country) {
+      user.country = country;
     }
 
     // Update password if provided and hash the new password
@@ -476,7 +482,7 @@ const searchUsers = async (req, res, next) => {
       userName: { $regex: query, $options: "i" },
       _id: { $ne: userData },  // Exclude the current user by ID
     }).select("userName profilePicture");
-    
+
 
     res.status(200).send({ status: true, users });
   } catch (error) {

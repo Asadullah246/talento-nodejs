@@ -39,7 +39,7 @@ const getNotificationsWithOutMarking = async (req, res, next) => {
 
         // Populate sender details for each notification
         allNotifications = await Notification.populate(allNotifications, {
-            path: 'sender', 
+            path: 'sender',
             select: 'userName profilePicture'
         });
 
@@ -257,9 +257,9 @@ const getUnreadNotifications = async (req, res, next) => {
         next(error);
     }
 };
-const markNotificationAsRead = async (req, res, next) => {
+const markNotificationAsRead = async (req, res, next) => { 
     try {
-        const { notificationId } = req.params; // Get notification ID from request parameters
+        const { notificationId } = req.body; // Get notification ID from request parameters
 
         // Update the notification to mark it as read
         await Notification.findByIdAndUpdate(notificationId, { read: true });

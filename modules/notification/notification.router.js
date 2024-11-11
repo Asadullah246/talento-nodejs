@@ -11,7 +11,7 @@ notificationRouter.post('/createNotification', checkToken, createNotification);
 notificationRouter.get('/unread', getUnreadNotifications);
 
 // Route to mark a specific notification as read
-notificationRouter.put('/:notificationId/read', markNotificationAsRead);
+notificationRouter.put('/markAsRead', markNotificationAsRead);
 
 // Route to mark all unread notifications as read
 notificationRouter.put('/markAllAsRead', checkToken, markAllNotificationsAsRead);
