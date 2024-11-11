@@ -7,6 +7,11 @@ const postSchema = new mongoose.Schema(
             ref: 'User',
             required: true
         },
+        community: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Community', // Reference to the community if this is a community post
+            required: false
+        },
         description: {
             type: String,
             required: true,
