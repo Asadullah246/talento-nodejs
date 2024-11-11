@@ -6,6 +6,10 @@ const {
     deletePostByUserIdPostId,
     getPaginatedPosts,
     getPost,
+    getPostById,
+    getPostsById,
+    sharePost,
+    getPostsByIdOfCommunity
 } = require('./post.controller');
 const { upload } = require('../../config/multerConfig');
 // const multer  = require('multer')
@@ -22,8 +26,12 @@ postRouter.post('/createPost', checkToken, upload.single('fileUploads'), (req, r
   }, createPost);
 
 
+postRouter.post('/sharePost', checkToken, sharePost );
 postRouter.get('/getPostByUserId', checkToken, getPostByUserId);
 postRouter.get('/getPost', checkToken, getPost);
+postRouter.get('/getPostById', checkToken, getPostById);
+postRouter.get('/getPostsById', checkToken, getPostsById);
+postRouter.get('/getPostsByIdOfCommunity', checkToken, getPostsByIdOfCommunity);
 postRouter.delete('/deletePostByUserIdPostId', checkToken, deletePostByUserIdPostId);
 postRouter.get('/getPaginatedPosts', checkToken, getPaginatedPosts);
 

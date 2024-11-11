@@ -1,4 +1,4 @@
-const Comment = require('../comment/comment.model');
+const Comment = require('../commentModule/comment.model');
 const Notification = require('../notification/notification.model');
 const Post = require('../post/post.model');
 
@@ -71,8 +71,9 @@ const likeComment = async (req, res, next) => {
             const notification = await Notification.create({
                 recipient: comment.user, // Comment owner receives the notification
                 sender: userId, // The user who liked the Comment
-                notificationType: 'like',
-                comment: commentId,
+                notificationType: 'like', 
+                comment: comment.post,
+                // comment: commentId,
                 message: `reacted to your Comment: "${comment.commentContent.substring(0, 10)}..."` // A preview of the post description
             });
             console.log('create Notification ', notification);

@@ -24,6 +24,18 @@ const userSchema = new mongoose.Schema(
             default: 'user',
             required: true
         },
+        bio: {
+            type: String,
+            required: false
+        },
+        address: {
+            type: String,
+            required: false
+        },
+        country: {
+            type: String,
+            required: false
+        },
         gender: {
             type: String,
             required: true
@@ -40,6 +52,9 @@ const userSchema = new mongoose.Schema(
         profilePicture: {
             type: String
         },
+        coverPicture: {
+            type: String
+        },
         followers: [
             {
                 type: mongoose.Schema.Types.ObjectId,
@@ -50,6 +65,13 @@ const userSchema = new mongoose.Schema(
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'User'
+            }
+        ],
+        postIgnoreList: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Post',
+                default: []
             }
         ]
     },

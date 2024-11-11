@@ -5,10 +5,15 @@ const cors = require('cors'); // cors
 const { authRouter } = require('./modules/auth/auth.router');
 const { userRouter } = require('./modules/user/user.router');
 const { postRouter } = require('./modules/post/post.router');
-const { commentRouter } = require('./modules/comment/comment.router');
+// const { commentRouter } = require('./modules/comment/comment.router');
+const { commentRouter } = require('./modules/commentModule/comment.router');
 const { communityRouter } = require('./modules/community/community.router');
 const { likeRouter } = require('./modules/like/like.router');
 const { notificationRouter } = require('./modules/notification/notification.router');
+const { chatRouter } = require('./modules/chat/chat.router');
+const { storyRouter } = require('./modules/story/story.router');
+
+
 require('dotenv').config(); // req for access dot env file
 
 // application level middleware
@@ -40,13 +45,15 @@ app.use('/like', likeRouter);
 app.use('/community', communityRouter);
 // notification
 app.use('/notification', notificationRouter);
+app.use('/chat', chatRouter);
+app.use('/story', storyRouter);
 
 // not found any route error : 404
 app.use((req, res, next) => {
-    console.log('no route found! test');
+    console.log('no route found!');
     res.send({
         status: false,
-        message: 'No route Found test '
+        message: 'No route Found '
     });
 });
 

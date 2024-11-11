@@ -14,9 +14,13 @@ const notificationSchema = new mongoose.Schema(
             ref: 'User',
             required: true
         },
+        link: {
+            type: String,
+            required: false
+        },
         notificationType: {
             type: String,
-            enum: ['like', 'comment', 'follow','invitation'], // Types of notifications
+            enum: ['like', 'comment', 'follow','invitation',"invitationToCommunity","reply","likeOnComment"], // Types of notifications
             required: true
         },
         post: {

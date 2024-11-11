@@ -7,6 +7,11 @@ const postSchema = new mongoose.Schema(
             ref: 'User',
             required: true
         },
+        community: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Community', // Reference to the community if this is a community post
+            required: false
+        },
         description: {
             type: String,
             required: true,
@@ -17,6 +22,10 @@ const postSchema = new mongoose.Schema(
         },
         videoUrl: {
             type: String
+        },
+        sharedPost: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post' // Reference to the original post if this is a shared post
         },
         comments: [
             {
@@ -29,7 +38,13 @@ const postSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'User' // Reference to Comment model for nested replies
             }
-        ]
+        ],
+        shared: [
+            {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'User' // Reference to the User model
+            }
+          ]
     },
     { timestamps: true }
 );
