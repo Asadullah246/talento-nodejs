@@ -403,7 +403,8 @@ const getPostsByIdOfCommunity = async (req, res, next) => {
 
 const getPost = async (req, res, next) => {
   try {
-    const { page = 1, limit = 50, userId } = req.query;
+    const { page, limit, userId } = req.query;
+    console.log("page", page, "limit", limit), "userId", userId;
 
     // Validate if the user ID in the request matches the authenticated user's ID
     if (userId !== req.tokenPayLoad._id.toString()) {
@@ -463,7 +464,8 @@ const getPost = async (req, res, next) => {
 
     res.send({
       status: true,
-      posts: postsWithUserInfo,
+      posts: postsWithUserInfo, 
+      limit:limit,
       totalPages,
       currentPage: Number(page),
       message: "Posts retrieved successfully",
