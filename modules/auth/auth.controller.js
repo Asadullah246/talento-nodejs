@@ -26,13 +26,13 @@ const signIn = async (req, res, next) => {
                 );
 
                 // console.log(token);
-                res.set('Access-Control-Expose-Headers', 'Authorization');
+                res.set('Access-Control-Expose-Headers', 'Authorization'); 
 
                 // token add to res header
                 res.set('Authorization', token);
                 //res.set('authToken', token);
                 res.json({
-                    status: true, 
+                    status: true,
                     user: dbUser,
                     message: 'User Log in success'
                 });

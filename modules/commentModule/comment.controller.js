@@ -43,7 +43,7 @@ const createComment = async (req, res, next) => {
         recipient: parentComment.user,
         sender: userId,
         notificationType: "reply",
-        comment: postId,
+        post: postId, 
         message: `replied to your comment: "${parentComment?.commentContent?.substring(
           0,
           20
@@ -240,7 +240,7 @@ const getAllCommentsWithReplies = async (req, res, next) => {
 const getCommentCount = async (req, res, next) => {
   try {
     const { specialId:postId } = req.query;
-    // console.log("postId", postId); 
+    // console.log("postId", postId);
 
     // Ensure the post exists
     const post = await Post.findById(postId);
