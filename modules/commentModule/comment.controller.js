@@ -43,7 +43,7 @@ const createComment = async (req, res, next) => {
         recipient: parentComment.user,
         sender: userId,
         notificationType: "reply",
-        post: postId, 
+        post: postId,
         message: `replied to your comment: "${parentComment?.commentContent?.substring(
           0,
           20
