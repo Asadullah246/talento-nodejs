@@ -1,4 +1,3 @@
-
 // const mongoose = require('mongoose');
 // const { ObjectId } = mongoose.Types;
 const { OTP_TIME_LIMIT } = require("../../libs/variables");
@@ -147,7 +146,6 @@ const checkFollow = async (req, res, next) => {
   }
 };
 
-
 const unFollowUser = async (req, res, next) => {
   try {
     const { targetUserId } = req.body; // Get the user to unfollow from request body
@@ -155,7 +153,9 @@ const unFollowUser = async (req, res, next) => {
 
     // Ensure the user is not trying to unfollow themselves
     if (userId === targetUserId) {
-      return res.status(400).send({ status: false, message: "You can't unfollow yourself" });
+      return res
+        .status(400)
+        .send({ status: false, message: "You can't unfollow yourself" });
     }
 
     // Find both the current user and the target user
@@ -163,16 +163,22 @@ const unFollowUser = async (req, res, next) => {
     const targetUser = await User.findById(targetUserId);
 
     if (!currentUser) {
-      return res.status(404).send({ status: false, message: "Current user not found" });
+      return res
+        .status(404)
+        .send({ status: false, message: "Current user not found" });
     }
 
     if (!targetUser) {
-      return res.status(404).send({ status: false, message: "User to unfollow not found" });
+      return res
+        .status(404)
+        .send({ status: false, message: "User to unfollow not found" });
     }
 
     // Check if the user is following the target user
     if (!currentUser.following.includes(targetUserId)) {
-      return res.status(400).send({ status: false, message: "You are not following this user" });
+      return res
+        .status(400)
+        .send({ status: false, message: "You are not following this user" });
     }
 
     // Remove target user's ID from the current user's following array
@@ -197,7 +203,6 @@ const unFollowUser = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // const unFollowUser = async (req, res, next) => {
 //   try {
@@ -256,7 +261,8 @@ const unFollowUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const userId = req.tokenPayLoad._id; // Get the current user's ID from token payload
-    const { userName, bio, password , fileType, address , country} = req.body;
+    const { userName, bio, password, fileType, address, country, imageUrl, coverPicture } =
+      req.body;
 
     console.log("redbody", req.body);
 
@@ -304,21 +310,25 @@ const updateUser = async (req, res, next) => {
       user.password = await bcrypt.hash(password, 10); // Hash the new password
     }
 
-    let profilePic = "";
+    // let profilePic = "";
 
-    console.log("red fiel", req?.file);
+    // console.log("red fiel", req?.file);
 
-    if (req.file) {
-      const fileUrl = req.file.location;
-      if (fileType === "image") {
-        profilePic = fileUrl;
-      }
-      //  else if (fileType === "video") {
-      //   videoUrl = fileUrl;
-      // }
+    // if (req.file) {
+    //   const fileUrl = req.file.location;
+    //   if (fileType === "image") {
+    //     profilePic = fileUrl;
+    //   }
+    //   //  else if (fileType === "video") {
+    //   //   videoUrl = fileUrl;
+    //   // }
+    // }
+    if (imageUrl) {
+      user.profilePicture = imageUrl;
     }
-
-    user.profilePicture = profilePic;
+    if (coverPicture) {
+      user.coverPicture = coverPicture; 
+    }
 
     // Save the updated user
     await user.save();
@@ -337,7 +347,9 @@ const ignorePost = async (req, res, next) => {
   const userId = req.tokenPayLoad._id;
 
   if (!userId || !postId) {
-    return res.status(400).json({ message: "User ID and Post ID are required" });
+    return res
+      .status(400)
+      .json({ message: "User ID and Post ID are required" });
   }
 
   try {
@@ -349,7 +361,7 @@ const ignorePost = async (req, res, next) => {
     }
     console.log("userid", userId);
     console.log("pst id", postId);
-console.log("user in out", user);
+    console.log("user in out", user);
     // Check if the post is already ignored, and add it if not
     if (!user.postIgnoreList.includes(postId)) {
       console.log("working user in changing", user);
@@ -357,10 +369,17 @@ console.log("user in out", user);
       await user.save();
     }
 
-    res.status(200).json({ message: "Post ignored successfully", postIgnoreList: user.postIgnoreList });
+    res
+      .status(200)
+      .json({
+        message: "Post ignored successfully",
+        postIgnoreList: user.postIgnoreList,
+      });
   } catch (error) {
     console.error("Error ignoring post:", error);
-    res.status(500).json({ message: "An error occurred while ignoring the post" });
+    res
+      .status(500)
+      .json({ message: "An error occurred while ignoring the post" });
   }
 };
 
@@ -446,8 +465,8 @@ const getUserById = async (req, res, next) => {
     }
 
     // Find the post by its ID and populate the user field
-    const postDb = await User.findOne({ _id: specialId }) ;
-// console.log("post db", postDb);
+    const postDb = await User.findOne({ _id: specialId });
+    // console.log("post db", postDb);
     // Check if post exists
     if (!postDb) {
       return res.send({
@@ -471,7 +490,7 @@ const searchUsers = async (req, res, next) => {
   try {
     const { query } = req.query;
     console.log("query is ", query);
-    const userData=req.tokenPayLoad._id;
+    const userData = req.tokenPayLoad._id;
 
     // Search for users by name or other criteria
     // const users = await User.find({
@@ -480,9 +499,8 @@ const searchUsers = async (req, res, next) => {
 
     const users = await User.find({
       userName: { $regex: query, $options: "i" },
-      _id: { $ne: userData },  // Exclude the current user by ID
+      _id: { $ne: userData }, // Exclude the current user by ID
     }).select("userName profilePicture");
-
 
     res.status(200).send({ status: true, users });
   } catch (error) {
@@ -654,48 +672,51 @@ const followingAndFollowers = async (req, res, next) => {
     // const {specialId}=req.query;
     const { specialId: userId } = req.query;
 
-
     // Find the current user and populate the following and followers arrays
     const currentUser = await User.findById(userId)
       .select("following followers") // Select only following and followers fields
       .populate({
         path: "following",
-        select: "userName profilePicture bio"
+        select: "userName profilePicture bio",
       })
       .populate({
         path: "followers",
-        select: "userName profilePicture bio"
+        select: "userName profilePicture bio",
       });
     const currentUserData = await User.findById(currentUserId);
-      // .select("following followers") // Select only following and followers fields
-      // .populate({
-      //   path: "following",
-      //   select: "userName profilePicture bio"
-      // })
-      // .populate({
-      //   path: "followers",
-      //   select: "userName profilePicture bio"
-      // });
+    // .select("following followers") // Select only following and followers fields
+    // .populate({
+    //   path: "following",
+    //   select: "userName profilePicture bio"
+    // })
+    // .populate({
+    //   path: "followers",
+    //   select: "userName profilePicture bio"
+    // });
 
     if (!currentUser) {
       return res.status(404).send({ status: false, message: "User not found" });
     }
 
     // Prepare arrays for following and followers with selected fields
-    const following = currentUser.following.map(user => ({
+    const following = currentUser.following.map((user) => ({
       userId: user._id,
-      bio:user?.bio,
+      bio: user?.bio,
       userName: user.userName,
       profilePicture: user.profilePicture,
-      followStatus: currentUserData.following.some(follower => follower.equals(user._id))
+      followStatus: currentUserData.following.some((follower) =>
+        follower.equals(user._id)
+      ),
     }));
 
-    const followers = currentUser.followers.map(user => ({
+    const followers = currentUser.followers.map((user) => ({
       userId: user._id,
-      bio:user?.bio,
+      bio: user?.bio,
       userName: user.userName,
       profilePicture: user.profilePicture,
-      followStatus: currentUserData.following.some(following => following.equals(user._id))
+      followStatus: currentUserData.following.some((following) =>
+        following.equals(user._id)
+      ),
     }));
     // const following = currentUser.following.map(user => ({
     //   userId: user._id,
@@ -724,8 +745,6 @@ const followingAndFollowers = async (req, res, next) => {
   }
 };
 
-
-
 module.exports = {
   userOtpSend,
   userOtpVerify,
@@ -739,5 +758,5 @@ module.exports = {
   checkFollow,
   getUserById,
   followingAndFollowers,
-  ignorePost
+  ignorePost,
 };

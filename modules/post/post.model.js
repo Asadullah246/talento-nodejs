@@ -20,7 +20,11 @@ const postSchema = new mongoose.Schema(
         imageUrl: {
             type: String
         },
+
         videoUrl: {
+            type: String
+        },
+        thumbnail: {
             type: String
         },
         sharedPost: {

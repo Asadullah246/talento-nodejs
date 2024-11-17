@@ -4,7 +4,7 @@ const Community = require('./community.model');
 
 
     try {
-      const { communityName, description, userId, fileType } = req.body;
+      const { communityName, description, userId, fileType, communityPicture } = req.body;
 
 
     if (userId !== req.tokenPayLoad._id.toString()) {
@@ -15,20 +15,20 @@ const Community = require('./community.model');
         });
       }
 
-      if (!req.file) {
-        return res.status(400).send({
-          status: false,
-          message: 'Image upload failed. Please upload an image.',
-        });
-      }
+    //   if (!req.file) {
+    //     return res.status(400).send({
+    //       status: false,
+    //       message: 'Image upload failed. Please upload an image.',
+    //     });
+    //   }
 
-      const communityPictureUrl = req?.file?.location; // URL of the uploaded image
+    //   const communityPictureUrl = req?.file?.location;
 
       // Create a new community with the user as the communityAdmin
       const community = await Community.create({
         communityName:communityName,
         description:description,
-        communityPicture: communityPictureUrl,
+        communityPicture: communityPicture, 
         communityAdmin: [userId], // The user who creates the community becomes the admin
         communityModerator: [],
         communityPeople: [userId], // The user is also part of the community
@@ -149,6 +149,7 @@ const inviteUserToCommunity = async (req, res, next) => {
         // console.log("community", community);
 
         if (!community) {
+            console.log("community not found");
             return res.status(404).send({ status: false, message: 'Community not found' });
         }
 
@@ -165,6 +166,7 @@ const inviteUserToCommunity = async (req, res, next) => {
 
         // Ensure the user to invite is not already part of the community
         if (community.communityPeople.includes(userIdToInvite)) {
+            console.log("Alredy exist as people");
             return res
                 .status(400)
                 .send({ status: false, message: 'User is already a member of the community' });
@@ -172,6 +174,7 @@ const inviteUserToCommunity = async (req, res, next) => {
 
         // Ensure the user isn't already invited
         if (community.invitedPeople.includes(userIdToInvite)) {
+            console.log("Alredy inited as people");
             return res
                 .status(400)
                 .send({ status: true, message: 'User has already been invited' });
@@ -513,6 +516,8 @@ const getSingleCommunity = async (req, res, next) => {
         const userId = req.tokenPayLoad._id; // Extract user ID from token payload
         const { specialId } = req.query;
 
+        console.log("callling", specialId);
+
         // Find the community and populate the related fields
         const community = await Community.findOne({ _id: specialId })
             .populate('communityAdmin', '_id userName profilePicture bio')
@@ -550,13 +555,15 @@ const getSingleCommunity = async (req, res, next) => {
 
         // Combine all members into a single list
         const memberList = [...adminList, ...moderatorList, ...peopleList];
+
+        console.log("memeb" , community, memberList);
         res.status(200).send({
             status: true,
             community,
             memberList
         });
     } catch (error) {
-        console.error('Error retrieving community data:', error);
+        console.log('Error retrieving community data:', error);
         next(error);
     }
 };
