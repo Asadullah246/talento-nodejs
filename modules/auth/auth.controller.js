@@ -26,7 +26,7 @@ const signIn = async (req, res, next) => {
                 );
 
                 // console.log(token);
-                res.set('Access-Control-Expose-Headers', 'Authorization'); 
+                res.set('Access-Control-Expose-Headers', 'Authorization');
 
                 // token add to res header
                 res.set('Authorization', token);
@@ -87,20 +87,20 @@ const signUp = async (req, res, next) => {
     // console.log("calling create acccount");
 
     try {
-        const { email, password, role, userName, gender,uid, isVerified } = req.body;
+        const { email, password, role, userName, gender,uid, isVerified, imageUrl } = req.body;
 
 
         const hashPassword = await bcrypt.hash(password, 10);
 
 
-        let profilePic = "";
+        // let profilePic = "";
 
 
         // console.log("req body", req.body);
-        console.log("red fiel", req?.file);
-        if (req?.file) {
-          const fileUrl = req?.file?.location;
-          profilePic = fileUrl;
+        // console.log("red fiel", req?.file);
+        // if (req?.file) {
+        //   const fileUrl = req?.file?.location;
+        //   profilePic = fileUrl;
         //   if (fileType === "image") {
         //     profilePic = fileUrl;
         //   }
@@ -111,7 +111,7 @@ const signUp = async (req, res, next) => {
         //       });
 
         //   }
-        }
+        // }
 
         // console.log(hashPassword);
 
@@ -121,7 +121,7 @@ const signUp = async (req, res, next) => {
             role,
             userName,
             gender,
-            profilePicture: profilePic,
+            profilePicture: imageUrl,
             uid, isVerified
         });
         console.log(user);

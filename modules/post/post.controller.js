@@ -464,7 +464,7 @@ const getPost = async (req, res, next) => {
 
     res.send({
       status: true,
-      posts: postsWithUserInfo, 
+      posts: postsWithUserInfo,
       limit:limit,
       totalPages,
       currentPage: Number(page),
@@ -525,7 +525,7 @@ const getPost = async (req, res, next) => {
 // testing
 const createPost = async (req, res, next) => {
   try {
-    const { userId, description, fileType, communityId } = req.body;
+    const { userId, description, fileType, communityId, imageUrl, videoUrl,thumbnail } = req.body;
     // console.log("body", req.body) ;
     console.log(req.tokenPayLoad._id.toString() === userId);
     // console.log(0);
@@ -540,24 +540,25 @@ const createPost = async (req, res, next) => {
     }
 
     // Check if a file was uploaded and set the URL accordingly
-    let imageUrl = "";
-    let videoUrl = "";
+    // let imageUrl = "";
+    // let videoUrl = ""; 
 
-    console.log("red fiel", req?.file);
-    if (req.file) {
-      const fileUrl = req.file.location;
-      if (fileType === "image") {
-        imageUrl = fileUrl;
-      } else if (fileType === "video") {
-        videoUrl = fileUrl;
-      }
-    }
+    // console.log("red fiel", req?.file);
+    // if (req.file) {
+    //   const fileUrl = req.file.location;
+    //   if (fileType === "image") {
+    //     imageUrl = fileUrl;
+    //   } else if (fileType === "video") {
+    //     videoUrl = fileUrl;
+    //   }
+    // }
 
     const postData = {
       user: userId,
       description,
       imageUrl,
       videoUrl,
+      thumbnail,
     };
 
     if (communityId) {
@@ -580,12 +581,7 @@ const createPost = async (req, res, next) => {
     }
 
     const post = await Post.create(postData);
-    // const createPostNew = await Post.create({
-    //   user: userId,
-    //   description,
-    //   imageUrl,
-    //   videoUrl,
-    // });
+
 
     res.send({
       status: true,

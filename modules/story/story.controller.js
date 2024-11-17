@@ -4,7 +4,7 @@ const User = require("../user/user.model");
 // Function to create a new story
 const createStory = async (req, res, next) => {
   try {
-    const { userId, fileType } = req.body;
+    const { userId, fileType, imageUrl } = req.body;
     const currentUserId = req.tokenPayLoad._id.toString();
 
     // Validate user ID
@@ -16,29 +16,29 @@ const createStory = async (req, res, next) => {
     }
 
     // Check if a file was uploaded and set the URL accordingly
-    let imageUrl = "";
-    let videoUrl = "";
+    // let imageUrl = "";
+    // let videoUrl = "";
 
-    if (req.file) {
-      const fileUrl = req.file.location;
-      if (fileType === "image") {
-        imageUrl = fileUrl;
-      } else if (fileType === "video") {
-        videoUrl = fileUrl;
-      }
-    } else {
-      return res.status(400).send({ status: false, message: "No file uploaded" });
-    }
+    // if (req.file) {
+    //   const fileUrl = req.file.location;
+    //   if (fileType === "image") {
+    //     imageUrl = fileUrl;
+    //   } else if (fileType === "video") {
+    //     videoUrl = fileUrl;
+    //   }
+    // } else {
+    //   return res.status(400).send({ status: false, message: "No file uploaded" });
+    // }
 
     // Create a new story
     const newStory = await Story.create({
       user: userId,
       imageUrl,
-      videoUrl,
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000, // Expires in 24 hours
+      // videoUrl, 
+      expiresAt: Date.now() + 192 * 60 * 60 * 1000, // Expires in 24 hours
     });
 
-    res.status(201).send({ 
+    res.status(201).send({
       status: true,
       story: newStory,
       message: "Story created successfully",
