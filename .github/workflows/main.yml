@@ -43,4 +43,5 @@ jobs:
             --name node-backend \
             --restart unless-stopped \
             -p 5000:5000 \
+            --env-file .env \
             asadullah047/node-backend:latest
