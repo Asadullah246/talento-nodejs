@@ -39,7 +39,7 @@ jobs:
         script: |
           docker rm -f node-backend || true
           docker pull asadullah047/node-backend:latest
-          docker run -d \
+           docker run -d \
             --name node-backend \
             --restart unless-stopped \
             -p 5000:5000 \
