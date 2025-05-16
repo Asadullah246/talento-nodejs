@@ -3,7 +3,7 @@ name: Deploy Node.js Backend
 on:
   push:
     branches:
-      - main  # triggers on push to main branch
+      - main  # Trigger deployment on push to main branch
 
 jobs:
   build-and-deploy:
@@ -29,7 +29,7 @@ jobs:
         push: true
         tags: asadullah047/node-backend:latest
 
-    - name: SSH Deploy to VPS
+    - name: Deploy to VPS
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.VPS_IP }}
@@ -37,7 +37,10 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         port: 22
         script: |
+          docker rm -f node-backend || true
           docker pull asadullah047/node-backend:latest
-          docker stop node-backend || true
-          docker rm node-backend || true
-          docker run -d --name node-backend -p 5000:5000 asadullah047/node-backend:latest
+          docker run -d \
+            --name node-backend \
+            --restart unless-stopped \
+            -p 5000:5000 \
+            asadullah047/node-backend:latest
