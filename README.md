@@ -33,7 +33,7 @@ Talento is a social networking platform similar to Facebook. This backend system
 - **Containerization:** Docker, Docker Compose
 - **CI/CD:** GitHub Actions, Docker Hub
 - **Monitoring:** Prometheus, Grafana
-- **Testing:
+- **Testing:**
 
 ---
 
@@ -64,9 +64,8 @@ This project uses GitHub Actions to:
 3. Create a `.env` file with necessary environment variables:
    - `MONGO_URI=`
    - `JWT_SECRET=`
-   - `AWS_ACCESS_KEY_ID=`
-   - `AWS_SECRET_ACCESS_KEY=`
    - etc.
-4. Start the app:
+
+Start the app:
    ```bash
    npm run dev
