@@ -48,6 +48,10 @@ app.use('/notification', notificationRouter);
 app.use('/chat', chatRouter);
 app.use('/story', storyRouter);
 
+
+// test
+app.get('/health', (req, res) => res.send('OK'));
+
 // not found any route error : 404
 app.use((req, res, next) => {
     console.log('no route found!');
