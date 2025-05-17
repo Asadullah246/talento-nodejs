@@ -37,6 +37,7 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         port: 22
         script: |
+          cd /root/node-app
           docker rm -f node-backend || true
           docker pull asadullah047/node-backend:latest
            docker run -d \
